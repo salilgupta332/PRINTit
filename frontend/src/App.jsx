@@ -1,26 +1,30 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Navbar from "./components/Navbar";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
 import CreateAssignment from "./pages/CreateAssignment";
 import MyAssignments from "./pages/MyAssignments";
 import AssignmentDetails from "./pages/AssignmentDetails";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./layout/DashboardLayout";
+import PublicLayout from "./layout/PublicLayout";
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
 
+        {/* PUBLIC ROUTES */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Route>
+
+        {/* DASHBOARD ROUTES */}
         <Route
           path="/dashboard"
           element={
@@ -30,13 +34,11 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-
           <Route path="create-assignment" element={<CreateAssignment />} />
-
           <Route path="my-assignments" element={<MyAssignments />} />
-
           <Route path="assignments/:id" element={<AssignmentDetails />} />
         </Route>
+
       </Routes>
     </BrowserRouter>
   );

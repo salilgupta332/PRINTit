@@ -5,9 +5,9 @@ function DashboardLayout() {
   return (
     <div className="dashboard-layout">
       <StudentSidebar />
-      <div className="dashboard-main">
+      <main style={{ flex: 1, padding: "24px", background: "#f8fafc" }}>
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }
