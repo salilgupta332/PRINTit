@@ -1,21 +1,13 @@
-console.log("VITE_API_URL =", import.meta.env.VITE_API_URL);
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { apiFetch } from "./client";
 
 export const loginUser = async (email, password) => {
-  const response = await fetch(`${API_URL}/api/auth/login`, {
+  return apiFetch("/auth/login", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Login failed");
-  }
-
-  return data;
 };
 
 export const signupUser = async ({
@@ -23,25 +15,19 @@ export const signupUser = async ({
   email,
   password,
   confirmPassword,
-  mobileNumber
+  mobileNumber,
 }) => {
-  const res = await fetch(`${API_URL}/api/auth/register`, {
+  return apiFetch("/auth/register", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       fullName,
       email,
       password,
       confirmPassword,
-      mobileNumber
+      mobileNumber,
     }),
   });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Signup failed");
-  }
-
-  return data;
 };

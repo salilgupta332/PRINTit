@@ -33,11 +33,10 @@ metadata:
   name: backend-service
   namespace: printit
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     role: backend
   ports:
     - port: 5000
       targetPort: 5000
-      protocol: TCP
-      nodePort: 31100
+
