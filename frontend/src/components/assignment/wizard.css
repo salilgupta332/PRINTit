@@ -1,0 +1,238 @@
+/* src/components/assignment/wizard.css */
+.wizard-container {
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  padding: 24px;
+  border-radius: 10px;
+}
+
+.progress-text {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4f46e5;
+  transition: width 0.3s ease;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.primary-btn {
+  background: #4f46e5;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+}
+
+.secondary-btn {
+  background: #e5e7eb;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+}
+
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+}
+
+
+
+/* ===== Page Wrapper ===== */
+.assignment-wizard {
+  max-width: 900px;
+  margin: 40px auto;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* ===== Heading ===== */
+.assignment-wizard h2 {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.assignment-wizard .progress-text {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #eaeaea;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  transition: width 0.3s ease;
+}
+
+/* ===== Step Title ===== */
+.step-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* ===== Form Grid ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full {
+  grid-column: span 2;
+}
+
+/* ===== Labels ===== */
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+/* ===== Inputs ===== */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  height: 44px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-group textarea {
+  height: 90px;
+  resize: vertical;
+}
+
+/* ===== Focus Effect ===== */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* ===== File Input ===== */
+.form-group input[type="file"] {
+  padding: 8px;
+  height: auto;
+}
+
+/* ===== Checkbox ===== */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.checkbox-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: #4f46e5;
+}
+
+/* ===== Navigation Buttons ===== */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.btn {
+  padding: 12px 28px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Primary */
+.btn-primary {
+  background: #4f46e5;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #4338ca;
+}
+
+/* Secondary */
+.btn-secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Submit */
+.btn-submit {
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  color: white;
+}
+
+.btn-submit:hover {
+  opacity: 0.95;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full {
+    grid-column: span 1;
+  }
+}

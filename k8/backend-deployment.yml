@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: printit
+  labels:
+    role: backend
+    env: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: backend
+  template:
+    metadata:
+      labels:
+        role: backend
+    spec:
+      containers:
+        - name: backend
+          image: devop0502/printit-backend:latest
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - secretRef:
+                name: backend-secret
+
+     
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: printit
+spec:
+  type: NodePort
+  selector:
+    role: backend
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+      nodePort: 31100
