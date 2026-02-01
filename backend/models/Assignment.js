@@ -128,7 +128,7 @@ const assignmentSchema = new mongoose.Schema(
       },
       bindingType: {
         type: String,
-        enum: ["spiral", "staple", "hard_binding"],
+        enum: ["spiral", "staple", "hard"],
       },
       copies: {
         type: Number,

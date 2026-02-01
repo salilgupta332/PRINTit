@@ -3,7 +3,9 @@ import "../styles/Dashboard.css";
 
 function Dashboard() {
   return (
-   <></>
+   <>
+   <div>Welcome to the Dashboard</div>
+   </>
   );
 }
 

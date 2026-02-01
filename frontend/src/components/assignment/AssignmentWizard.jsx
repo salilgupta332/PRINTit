@@ -1,6 +1,6 @@
 // src/components/assignment/AssignmentWizard.jsx
 import { useState } from "react";
-import "./wizard.css";
+
 
 import StepBasicDetails from "./steps/StepBasicDetails";
 import StepFrontPage from "./steps/StepFrontPage";
@@ -80,7 +80,7 @@ if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
 
   return (
     <div className="wizard-container">
-      <h2>Create Assignment</h2>
+      <h2 className="text-3xl font-bold text-gray-900 text-center" >Create Assignment</h2>
 
       {/* Progress */}
       <div className="progress-text">{progress}% completed</div>
@@ -138,21 +138,27 @@ if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
       {/* Navigation */}
       <div className="nav-buttons">
         {step > 1 && (
-          <button className="secondary-btn" onClick={back}>
-            Back
-          </button>
+       <button
+          type="button"
+          className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500" onClick={back}>
+          Back
+        </button>
         )}
 
         {step < TOTAL_STEPS && (
-          <button className="primary-btn" onClick={next}>
-            Next
-          </button>
+                 <button
+          type="button"
+          className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500" onClick={next}>
+          Next
+        </button>
         )}
 
         {step === TOTAL_STEPS && (
-          <button className="primary-btn" onClick={handleSubmit}>
-            Submit
-          </button>
+       <button
+          type="button"
+          className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500" onClick={handleSubmit}>
+          Submit
+        </button>
         )}
       </div>
     </div>
@@ -160,3 +166,4 @@ if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
 }
 
 export default AssignmentWizard;
+

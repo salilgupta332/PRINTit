@@ -6,126 +6,134 @@ export default function StepBasicDetails({ data, setData }) {
     }));
   };
 
+  const input =
+    "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+  const label = "mb-1 block text-sm font-medium text-gray-700";
+
   return (
-    <div className="space-y-8">
+    <div className="h-full w-full">
       {/* Header */}
-      <div>
-        <h3 className="text-2xl font-bold text-gray-900">
-          Step 1: Basic Details
-        </h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Tell us about your assignment
-        </p>
+      <h3 className="text-xl font-semibold text-gray-900">
+        Step 1: Basic Details
+      </h3>
+
+      {/* TOP ROW */}
+      <div className="mt-4 grid grid-cols-3 gap-4">
+        <div>
+          <label className={label}>Subject Name</label>
+          <input
+            type="text"
+            value={data.subjectName}
+            onChange={(e) => update("subjectName", e.target.value)}
+            className={input}
+          />
+        </div>
+
+        <div>
+          <label className={label}>Assignment Type</label>
+          <select
+            value={data.assignmentType}
+            onChange={(e) => update("assignmentType", e.target.value)}
+            className={input}
+          >
+            <option value="">Select</option>
+            <option value="student_upload">Student Upload</option>
+            <option value="from_scratch">Typing Required</option>
+          </select>
+        </div>
+
+        {data.assignmentType === "from_scratch" && (
+          <div>
+            <label className={label}>Assignment Language</label>
+            <select
+              value={data.language || ""}
+              onChange={(e) => update("language", e.target.value)}
+              className={input}
+            >
+              <option value="">Select</option>
+              <option value="english">English</option>
+              <option value="hindi">Hindi</option>
+            </select>
+          </div>
+        )}
       </div>
 
-      {/* Assignment Type */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700">
-          Assignment Type
-        </label>
-        <select
-          value={data.assignmentType}
-          onChange={(e) => update("assignmentType", e.target.value)}
-          className="mt-2 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2
-                     focus:border-indigo-500 focus:ring-indigo-500"
-        >
-          <option value="">Select</option>
-          <option value="student_upload">Student Upload</option>
-          <option value="from_scratch">Typing Required</option>
-        </select>
-      </div>
-
-      {/* Assignment Title */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700">
-          Assignment Title
-        </label>
+      {/* ASSIGNMENT TITLE */}
+      <div className="mt-4">
+        <label className={label}>Assignment Title</label>
         <input
           type="text"
           value={data.assignmentTitle}
           onChange={(e) => update("assignmentTitle", e.target.value)}
-          placeholder="Enter assignment title"
-          className="mt-2 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2
-                     focus:border-indigo-500 focus:ring-indigo-500"
+          className={input}
         />
       </div>
 
-      {/* Subject Name */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700">
-          Subject Name
-        </label>
-        <input
-          type="text"
-          value={data.subjectName}
-          onChange={(e) => update("subjectName", e.target.value)}
-          placeholder="Enter subject name"
-          className="mt-2 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2
-                     focus:border-indigo-500 focus:ring-indigo-500"
+      {/* MIDDLE ROW */}
+      <div className="mt-4 grid grid-cols-2 gap-4">
+        <div>
+          <label className={label}>Academic Level</label>
+          <select
+            value={data.academicLevel || ""}
+            onChange={(e) => update("academicLevel", e.target.value)}
+            className={input}
+          >
+            <option value="">Select</option>
+            <option value="school">School</option>
+            <option value="college">College</option>
+            <option value="university">University</option>
+          </select>
+        </div>
+
+        <div>
+          <label className={label}>Deadline</label>
+          <input
+            type="date"
+            value={data.deadline}
+            onChange={(e) => update("deadline", e.target.value)}
+            className={input}
+          />
+        </div>
+      </div>
+
+      {/* PROJECT DESCRIPTION */}
+      <div className="mt-4">
+        <label className={label}>Project Description</label>
+        <textarea
+          rows={3}
+          value={data.description || ""}
+          onChange={(e) => update("description", e.target.value)}
+          className={`${input} resize-none`}
         />
       </div>
 
-      {/* Deadline */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700">
-          Deadline
-        </label>
-        <input
-          type="date"
-          value={data.deadline}
-          onChange={(e) => update("deadline", e.target.value)}
-          className="mt-2 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2
-                     focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </div>
-
-      {/* Student Upload */}
+      {/* FILE UPLOAD */}
       {data.assignmentType === "student_upload" && (
-        <div className="rounded-xl border border-dashed border-indigo-300 bg-indigo-50 p-6">
-          <label className="block text-sm font-semibold text-indigo-700">
-            Upload Assignment File
-          </label>
+        <div className="mt-4">
+          <label className={label}>Upload Assignment File</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx"
             onChange={(e) => update("uploadedFiles", e.target.files)}
-            className="mt-3 block w-full text-sm text-gray-600"
+            className="text-sm"
           />
         </div>
       )}
 
-      {/* From Scratch Language */}
-      {data.assignmentType === "from_scratch" && (
-        <div>
-          <label className="block text-sm font-semibold text-gray-700">
-            Assignment Language
-          </label>
-          <select
-            value={data.language || ""}
-            onChange={(e) => update("language", e.target.value)}
-            className="mt-2 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2
-                       focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="">Select Language</option>
-            <option value="english">English</option>
-            <option value="hindi">Hindi</option>
-          </select>
-        </div>
-      )}
-
-      {/* Front Page Checkbox */}
-      <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4">
-        <input
-          type="checkbox"
-          checked={data.frontPageRequired}
-          onChange={(e) =>
-            update("frontPageRequired", e.target.checked)
-          }
-          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-        />
-        <span className="text-sm font-medium text-gray-700">
+      {/* FRONT PAGE + NEXT */}
+      <div className="mt-4 flex items-center justify-between">
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={data.frontPageRequired}
+            onChange={(e) =>
+              update("frontPageRequired", e.target.checked)
+            }
+          />
           Front Page Required
-        </span>
+        </label>
+
+
       </div>
     </div>
   );
