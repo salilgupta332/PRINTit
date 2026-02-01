@@ -20,10 +20,17 @@ function MyAssignments() {
   };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>My Assignments</h2>
+    <div className="p-8">
+      <h2 className="text-2xl font-bold text-gray-900">
+        My Assignments
+      </h2>
+      <p className="mt-1 text-sm text-gray-500">
+        Track and manage your submitted assignments
+      </p>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && (
+        <p className="mt-4 text-sm text-red-600">{error}</p>
+      )}
 
       <AssignmentList assignments={assignments} />
     </div>

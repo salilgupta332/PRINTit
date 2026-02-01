@@ -1,7 +1,6 @@
 // src/components/assignment/AssignmentWizard.jsx
 import { useState } from "react";
 
-
 import StepBasicDetails from "./steps/StepBasicDetails";
 import StepFrontPage from "./steps/StepFrontPage";
 import StepPrintPreferences from "./steps/StepPrintPreferences";
@@ -19,7 +18,7 @@ function AssignmentWizard() {
     subjectName: "",
     academicLevel: "college",
     deadline: "",
-    language: "",   
+    language: "",
     uploadedFiles: [],
     frontPageRequired: false,
 
@@ -48,23 +47,23 @@ function AssignmentWizard() {
       fd.append("academicLevel", formData.academicLevel);
       fd.append("deadline", formData.deadline);
       fd.append("frontPageRequired", formData.frontPageRequired);
-if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
-  Array.from(formData.uploadedFiles).forEach((file) => {
-    fd.append("uploadedFiles", file);
-  });
-}
+      if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
+        Array.from(formData.uploadedFiles).forEach((file) => {
+          fd.append("uploadedFiles", file);
+        });
+      }
       if (formData.language) {
-  fd.append("language", formData.language);
-}
+        fd.append("language", formData.language);
+      }
 
       // nested objects
       fd.append(
         "frontPageDetails",
-        JSON.stringify(formData.frontPageDetails || {})
+        JSON.stringify(formData.frontPageDetails || {}),
       );
       fd.append(
         "printPreferences",
-        JSON.stringify(formData.printPreferences || {})
+        JSON.stringify(formData.printPreferences || {}),
       );
       fd.append("address", JSON.stringify(formData.address || {}));
 
@@ -80,7 +79,9 @@ if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
 
   return (
     <div className="wizard-container">
-      <h2 className="text-3xl font-bold text-gray-900 text-center" >Create Assignment</h2>
+      <h2 className="text-3xl font-bold text-gray-900 text-center">
+        Create Assignment
+      </h2>
 
       {/* Progress */}
       <div className="progress-text">{progress}% completed</div>
@@ -89,9 +90,7 @@ if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
       </div>
 
       {/* STEP 1 */}
-      {step === 1 && (
-        <StepBasicDetails data={formData} setData={setFormData} />
-      )}
+      {step === 1 && <StepBasicDetails data={formData} setData={setFormData} />}
 
       {/* STEP 2 (Front Page – conditional) */}
       {step === 2 && frontPageRequired && (
@@ -135,35 +134,43 @@ if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
       {/* STEP 5 (Payment / Review) */}
       {step === TOTAL_STEPS && <StepPayment />}
 
-      {/* Navigation */}
-      <div className="nav-buttons">
-        {step > 1 && (
-       <button
-          type="button"
-          className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500" onClick={back}>
-          Back
-        </button>
-        )}
+    
+        {/* Navigation */}
+        
+        <div className="nav-buttons">
+          {step > 1 && (
+            <button
+              type="button"
+              className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+              onClick={back}
+            >
+              Back
+            </button>
+          )}
 
-        {step < TOTAL_STEPS && (
-                 <button
-          type="button"
-          className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500" onClick={next}>
-          Next
-        </button>
-        )}
+          {step < TOTAL_STEPS && (
+            <button
+              type="button"
+              className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+              onClick={next}
+            >
+              Next
+            </button>
+          )}
 
-        {step === TOTAL_STEPS && (
-       <button
-          type="button"
-          className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500" onClick={handleSubmit}>
-          Submit
-        </button>
-        )}
-      </div>
+          {step === TOTAL_STEPS && (
+            <button
+              type="button"
+              className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
+          )}
+        </div>
+   
     </div>
   );
 }
 
 export default AssignmentWizard;
-

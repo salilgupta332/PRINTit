@@ -41,7 +41,7 @@ function SignupForm() {
 
   return (
     <div className="flex h-[calc(100vh-64px)] items-center justify-center px-5 lg:px-0 bg-gray-100 overflow-hidden">
-      <div className="max-w-screen-xl h-full bg-white border shadow sm:rounded-lg flex w-full overflow-hidden">
+      <div className="max-w-7xl h-full bg-white border shadow sm:rounded-lg flex w-full overflow-hidden">
         {/* Left Image Section */}
         <div className="flex-1 bg-indigo-900 text-center hidden md:flex">
           <div
