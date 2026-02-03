@@ -31,15 +31,15 @@ app.use("/api/assignments", require("./routes/getMyAssignments"));
 app.use("/api/auth", express.json(), require("./routes/authRoutes"));
 app.use("/api/auth", express.json(), require("./routes/loginRoutes"));
 
-const adminAuthRoutes = require("./routes/adminAuth");
-const adminSignupRoutes = require("./routes/adminSignup");
-const adminAssignmentsRoutes = require("./routes/adminAssignments");
+const adminAuthRoutes = require("./routes/adminRoutes/adminAuthRoutes");
+const adminSignupRoutes = require("./routes/adminRoutes/adminSignup");
+const adminAssignmentsRoutes = require("./routes/adminRoutes/adminAssignments");
+app.use("/api/admin", require("./routes/adminRoutes/adminProtectedRoutes"));
+app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminAuthRoutes"));
+app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminSignup"));
+app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminAssignments"));
 
-app.use("/api/admin", express.json(), require("./routes/adminAuth"));
-app.use("/api/admin", express.json(), require("./routes/adminSignup"));
-app.use("/api/admin", express.json(), require("./routes/adminAssignments"));
-
-const authMiddleware = require("./middlewares/authMiddleware");
+const authMiddleware = require("./middlewares/adminAuthMiddleware");
 
 app.get("/api/protected", authMiddleware, (req, res) => {
   res.json({
