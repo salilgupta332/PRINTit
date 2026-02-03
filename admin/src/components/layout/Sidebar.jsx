@@ -1,4 +1,9 @@
+import { NavLink } from "react-router-dom";
+
 export default function Sidebar() {
+  const linkBase =
+    "flex items-center gap-2 px-4 py-2 rounded-md font-medium transition";
+
   return (
     <aside className="w-64 bg-white border-r min-h-screen px-4 py-6">
       <h1 className="text-2xl font-bold text-indigo-600 mb-8">
@@ -6,19 +11,34 @@ export default function Sidebar() {
       </h1>
 
       <nav className="space-y-2">
-        <a
-          href="/dashboard"
-          className="block px-4 py-2 rounded-md hover:bg-indigo-50"
+        {/* Dashboard */}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `${linkBase} ${
+              isActive
+                ? "bg-indigo-600 text-white"
+                : "text-gray-700 hover:bg-indigo-50"
+            }`
+          }
         >
           📊 Dashboard
-        </a>
+        </NavLink>
 
-        <a
-          href="/assignments"
-          className="block px-4 py-2 rounded-md bg-indigo-600 text-white"
+        {/* Assignments */}
+        <NavLink
+          to="/assignments"
+          className={({ isActive }) =>
+            `${linkBase} ${
+              isActive
+                ? "bg-indigo-600 text-white"
+                : "text-gray-700 hover:bg-indigo-50"
+            }`
+          }
         >
           📄 Assignments
-        </a>
+        </NavLink>
       </nav>
     </aside>
   );

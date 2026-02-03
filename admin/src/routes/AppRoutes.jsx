@@ -1,24 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "../pages/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Dashboard from "../pages/Dashboard";
 import Assignments from "../pages/Assignments";
-import ProtectedRoute from "./ProtectedRoute";
-
+import Login from "../pages/Login";
+import Signup from "../pages/Signup";
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/assignments" element={<Assignments />} />
         <Route path="/login" element={<Login />} />
-
-        <Route
-          path="/assignments"
-          element={
-            <ProtectedRoute>
-              <Assignments />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route path="*" element={<Navigate to="/assignments" />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </BrowserRouter>
   );
