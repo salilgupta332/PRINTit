@@ -21,7 +21,13 @@ exports.updateAssignmentStatus = async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
 
-    const allowedStatuses = ["pending", "in-progress", "completed"];
+    const allowedStatuses = [
+      "requested",
+      "in_progress",
+      "printing",
+      "dispatched",
+      "delivered",
+    ];
 
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
@@ -39,7 +45,7 @@ exports.updateAssignmentStatus = async (req, res) => {
     res.json({
       success: true,
       message: "Assignment status updated successfully",
-      assignment
+      assignment,
     });
   } catch (error) {
     console.error("Update status error:", error);
@@ -47,11 +53,12 @@ exports.updateAssignmentStatus = async (req, res) => {
   }
 };
 
-
 exports.getAssignmentById = async (req, res) => {
   try {
-    const assignment = await Assignment.findById(req.params.id)
-      .populate("student", "name email");
+    const assignment = await Assignment.findById(req.params.id).populate(
+      "student",
+      "name email",
+    );
 
     if (!assignment) {
       return res.status(404).json({ message: "Assignment not found" });

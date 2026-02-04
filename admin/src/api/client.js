@@ -31,3 +31,22 @@ export async function apiGet(path, token = null) {
   return data;
 }
 
+export async function apiPut(path, body, token) {
+  const res = await fetch(`/api${path}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Request failed");
+  }
+
+  return data;
+}
+
