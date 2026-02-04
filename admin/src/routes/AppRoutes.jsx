@@ -3,6 +3,7 @@ import Dashboard from "../pages/Dashboard";
 import Assignments from "../pages/Assignments";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
+import AssignmentDetails from "../pages/AssignmentDetails";
 export default function AppRoutes() {
   return (
     <BrowserRouter>
@@ -11,6 +12,7 @@ export default function AppRoutes() {
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/assignments/:id" element={<AssignmentDetails />} />
       </Routes>
     </BrowserRouter>
   );

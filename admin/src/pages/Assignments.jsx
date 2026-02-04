@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "../components/layout/AdminLayout";
 import { useAuth } from "../context/AuthContext";
 import { apiGet } from "../api/client";
+import { useNavigate } from "react-router-dom";
 
 const statusStyles = {
   requested: "bg-yellow-100 text-yellow-700",
@@ -26,7 +27,7 @@ export default function Assignments() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate();
   console.log("assignments:", assignments);
   console.log("loading:", loading);
   console.log("token:", token);
@@ -37,7 +38,7 @@ export default function Assignments() {
         setLoading(true);
         const data = await apiGet("/admin/assignments", token);
         console.log("Fetched data:", data);
-        
+
         // Handle different response formats
         if (Array.isArray(data)) {
           setAssignments(data);
@@ -155,7 +156,10 @@ export default function Assignments() {
                   </td>
                   {/* Action */}
                   <td className="px-6 py-4 text-right">
-                    <button className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+                    <button
+                      onClick={() => navigate(`/assignments/${a._id}`)}
+                      className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                    >
                       View
                     </button>
                   </td>

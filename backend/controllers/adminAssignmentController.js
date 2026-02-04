@@ -46,3 +46,20 @@ exports.updateAssignmentStatus = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+exports.getAssignmentById = async (req, res) => {
+  try {
+    const assignment = await Assignment.findById(req.params.id)
+      .populate("student", "name email");
+
+    if (!assignment) {
+      return res.status(404).json({ message: "Assignment not found" });
+    }
+
+    res.json(assignment);
+  } catch (error) {
+    console.error("Fetch assignment error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

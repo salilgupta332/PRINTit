@@ -72,8 +72,12 @@ function AssignmentWizard() {
       alert("🎉 Assignment created successfully!");
       console.log("SUBMITTED DATA ✅", formData);
     } catch (error) {
-      console.error(error);
-      alert("❌ Failed to submit assignment");
+      console.error("SUBMIT ERROR:", error);
+
+      const backendMessage =
+        error?.response?.data?.message || error?.message || "Unknown error";
+
+      alert(`❌ ${backendMessage}`);
     }
   };
 
@@ -134,41 +138,39 @@ function AssignmentWizard() {
       {/* STEP 5 (Payment / Review) */}
       {step === TOTAL_STEPS && <StepPayment />}
 
-    
-        {/* Navigation */}
-        
-        <div className="nav-buttons">
-          {step > 1 && (
-            <button
-              type="button"
-              className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-              onClick={back}
-            >
-              Back
-            </button>
-          )}
+      {/* Navigation */}
 
-          {step < TOTAL_STEPS && (
-            <button
-              type="button"
-              className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-              onClick={next}
-            >
-              Next
-            </button>
-          )}
+      <div className="nav-buttons">
+        {step > 1 && (
+          <button
+            type="button"
+            className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+            onClick={back}
+          >
+            Back
+          </button>
+        )}
 
-          {step === TOTAL_STEPS && (
-            <button
-              type="button"
-              className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-              onClick={handleSubmit}
-            >
-              Submit
-            </button>
-          )}
-        </div>
-   
+        {step < TOTAL_STEPS && (
+          <button
+            type="button"
+            className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+            onClick={next}
+          >
+            Next
+          </button>
+        )}
+
+        {step === TOTAL_STEPS && (
+          <button
+            type="button"
+            className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+            onClick={handleSubmit}
+          >
+            Submit
+          </button>
+        )}
+      </div>
     </div>
   );
 }

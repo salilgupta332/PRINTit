@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middlewares/adminAuthMiddleware");
+const authMiddleware = require("../middlewares/userAuthMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
 const { createAssignment } = require("../controllers/assignmentController");
 
