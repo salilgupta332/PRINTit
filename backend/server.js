@@ -34,6 +34,8 @@ app.use("/api/auth", express.json(), require("./routes/loginRoutes"));
 const adminAuthRoutes = require("./routes/adminRoutes/adminAuthRoutes");
 const adminSignupRoutes = require("./routes/adminRoutes/adminSignup");
 const adminAssignmentsRoutes = require("./routes/adminRoutes/adminAssignments");
+const adminDashboardRoutes = require("./routes/adminRoutes/adminDashboardRoutes");
+app.use("/api/admin", adminDashboardRoutes);
 app.use("/api/admin", require("./routes/adminRoutes/adminProtectedRoutes"));
 app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminAuthRoutes"));
 app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminSignup"));

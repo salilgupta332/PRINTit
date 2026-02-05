@@ -2,9 +2,9 @@ export async function apiPost(path, body) {
   const res = await fetch(`/api${path}`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
 
   const data = await res.json();
@@ -14,13 +14,12 @@ export async function apiPost(path, body) {
   return data;
 }
 
-
 export async function apiGet(path, token = null) {
   const res = await fetch(`/api${path}`, {
     headers: {
       "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` })
-    }
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
   });
 
   const data = await res.json();
@@ -50,3 +49,25 @@ export async function apiPut(path, body, token) {
   return data;
 }
 
+export const API_BASE = "/api";
+
+export async function apiFetch(path, options = {}) {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "API request failed");
+  }
+
+  return data;
+}

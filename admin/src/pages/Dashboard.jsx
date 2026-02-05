@@ -1,51 +1,65 @@
 import AdminLayout from "../components/layout/AdminLayout";
 import { useAuth } from "../context/AuthContext";
+import DashboardStatCard from "../components/DashboardStatCard";
+import {apiFetch} from "../api/client";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const { isAuthenticated } = useAuth();
 
+  
+  const [stats, setStats] = useState({
+    total: "—",
+    pending: "—",
+    completed: "—",
+  });
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const loadStats = async () => {
+      try {
+        const data = await apiFetch("/admin/dashboard/stats");
+        setStats(data);
+      } catch (err) {
+        
+      }
+    };
+
+    loadStats();
+  }, [isAuthenticated]);
+
+
   return (
     <AdminLayout>
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-gray-500">Overview of PRINTit system</p>
-      </div>
+      <div className="p-6">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <p className="text-gray-500 mt-1">
+        Overview of PRINTit system
+      </p>
 
-      {/* Read-only warning (ONLY when not logged in) */}
       {!isAuthenticated && (
-        <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3">
-          <p className="text-yellow-700">
-            You are viewing this dashboard in{" "}
-            <span className="font-semibold">read-only mode</span>.  
-            Please login to perform admin actions.
-          </p>
+        <div className="mt-4 rounded border border-yellow-300 bg-yellow-50 px-4 py-3 text-yellow-800">
+          You are viewing this dashboard in <b>read-only mode</b>.
+          Please login to perform admin actions.
         </div>
       )}
 
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="text-sm font-medium text-gray-500">
-            Total Assignments
-          </h3>
-          <p className="mt-2 text-2xl font-semibold">—</p>
-        </div>
-
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="text-sm font-medium text-gray-500">
-            Pending Requests
-          </h3>
-          <p className="mt-2 text-2xl font-semibold">—</p>
-        </div>
-
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h3 className="text-sm font-medium text-gray-500">
-            Completed
-          </h3>
-          <p className="mt-2 text-2xl font-semibold">—</p>
-        </div>
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <DashboardStatCard
+          title="Total Assignments"
+          value={stats.total}
+        />
+        <DashboardStatCard
+          title="Pending Requests"
+          value={stats.pending}
+        />
+        <DashboardStatCard
+          title="Completed"
+          value={stats.completed}
+        />
       </div>
+    </div>
     </AdminLayout>
   );
 }
