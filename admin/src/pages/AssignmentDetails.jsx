@@ -2,14 +2,16 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AdminLayout from "../components/layout/AdminLayout";
 import { apiGet } from "../api/client";
-import { apiPut} from "../api/client";
+import { apiPut } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import StatusDropdown from "../components/StatusDropdown";
+import FilePreview from "../components/FilePreview";
+import PreviewModal from "../components/PreviewModal";
 export default function AssignmentDetails() {
   const { id } = useParams();
   const { token, loading } = useAuth();
   const [assignment, setAssignment] = useState(null);
-
+  const [previewFile, setPreviewFile] = useState(null);
   const [updating, setUpdating] = useState(false);
 
   async function handleStatusChange(newStatus) {
@@ -106,6 +108,33 @@ export default function AssignmentDetails() {
           <li>📐 Paper Size: {assignment.printPreferences.paperSize}</li>
           <li>🖨 Copies: {assignment.printPreferences.copies}</li>
         </ul>
+      </div>
+
+      {/* Uploaded Files */}
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-2">Uploaded File</h3>
+
+        {assignment.uploadedFiles.map((file, index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between border rounded px-4 py-2 mb-2"
+          >
+            <span className="text-sm">{file.filename}</span>
+
+            <button
+              onClick={() => setPreviewFile(file)}
+              className="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-700"
+            >
+              Preview
+            </button>
+          </div>
+        ))}
+        {previewFile && (
+          <PreviewModal
+            file={previewFile}
+            onClose={() => setPreviewFile(null)}
+          />
+        )}
       </div>
     </AdminLayout>
   );

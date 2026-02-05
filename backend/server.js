@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
-
+const path = require("path");
 // Load environment variables first
 dotenv.config();
 
@@ -38,7 +38,10 @@ app.use("/api/admin", require("./routes/adminRoutes/adminProtectedRoutes"));
 app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminAuthRoutes"));
 app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminSignup"));
 app.use("/api/admin", express.json(), require("./routes/adminRoutes/adminAssignments"));
-
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"))
+);
 const authMiddleware = require("./middlewares/adminAuthMiddleware");
 
 app.get("/api/protected", authMiddleware, (req, res) => {
