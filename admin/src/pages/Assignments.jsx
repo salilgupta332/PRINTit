@@ -28,16 +28,16 @@ export default function Assignments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  console.log("assignments:", assignments);
-  console.log("loading:", loading);
-  console.log("token:", token);
+  // console.log("assignments:", assignments);
+  // console.log("loading:", loading);
+  // console.log("token:", token);
 
   useEffect(() => {
     async function fetchAssignments() {
       try {
         setLoading(true);
         const data = await apiGet("/admin/assignments", token);
-        console.log("Fetched data:", data);
+       
 
         // Handle different response formats
         if (Array.isArray(data)) {

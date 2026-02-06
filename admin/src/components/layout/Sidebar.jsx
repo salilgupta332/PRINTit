@@ -60,11 +60,22 @@ export default function Sidebar() {
                 <span className="flex items-center gap-2">
                   {item.icon} {item.label}
                 </span>
-                <span>{isOpen ? "▲" : "▼"}</span>
+                <span
+                  className={`transition-transform duration-300 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  ▼
+                </span>
               </button>
 
-              {isOpen && (
-                <div className="ml-4 mt-1 space-y-1">
+              <div
+                className={`
+    ml-4 overflow-hidden transition-all duration-300 ease-in-out
+    ${isOpen ? "max-h-96 opacity-100 mt-1" : "max-h-0 opacity-0"}
+  `}
+              >
+                <div className="space-y-1">
                   {item.children.map((child, i) => (
                     <NavLink
                       key={i}
@@ -82,7 +93,7 @@ export default function Sidebar() {
                     </NavLink>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
