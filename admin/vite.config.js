@@ -3,18 +3,23 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  darkMode: "class",
+  base: "/",  // 🔥 CHANGED FROM "/" TO "/admin/"
+  build: {
+    outDir: "dist",
+  },
   plugins: [
     react(),
-    tailwindcss(), // ✅ REQUIRED for Tailwind v4
+    tailwindcss(),
   ],
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:5000", // backend local
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,
       },
     },
+    port: 5174,
+    host: true,
   },
 });

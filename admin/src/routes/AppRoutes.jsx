@@ -6,7 +6,7 @@ import Signup from "../pages/Signup";
 import AssignmentDetails from "../pages/AssignmentDetails";
 export default function AppRoutes() {
   return (
-    <BrowserRouter>
+    <BrowserRouter >
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/assignments" element={<Assignments />} />

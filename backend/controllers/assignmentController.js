@@ -107,13 +107,13 @@ exports.createAssignment = async (req, res) => {
     const uploadedFiles =
       req.files?.uploadedFiles?.map((file) => ({
         filename: file.originalname,
-        path: file.path,
+        url: `/uploads/${file.filename}`,
       })) || [];
 
     const layoutFiles =
       req.files?.layoutFiles?.map((file) => ({
         filename: file.originalname,
-        path: file.path,
+        url: `/uploads/${file.filename}`,
       })) || [];
 
     /* =====================

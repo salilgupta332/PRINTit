@@ -5,12 +5,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# Faster & more reliable than npm install
 RUN npm ci --legacy-peer-deps
 
 COPY . .
 
-# Build Vite app
 RUN npm run build
 
 # -------------------- Production Stage --------------------
@@ -18,12 +16,16 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install a tiny static server
 RUN npm install -g serve
 
-# Copy only build output
-COPY --from=frontend-builder /app/dist ./dist
+# Copy only the built files (inside dist/admin)
+COPY --from=frontend-builder  /app/dist ./dist
 
-EXPOSE 5173
+EXPOSE 5174
 
-CMD ["serve", "-s", "dist", "-l", "5173"]
+# Serve from ./dist on port 80, with /admin base path support
+CMD ["serve", "-s", "dist", "-l", "5174"]
+
+
+
+
