@@ -1,5 +1,5 @@
 const Assignment = require("../models/Assignment");
-
+const { getSignedFileUrl } = require("../utils/s3Upload");
 /**
  * GET /api/admin/assignments
  */
@@ -70,3 +70,23 @@ exports.getAssignmentById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// @desc Admin get secure file preview
+// @route GET /api/admin/assignments/file/:assignmentId/:fileIndex
+// @access Admin
+
+exports.getAdminFilePreview = async (req, res) => {
+  try {
+    const key = decodeURIComponent(req.query.key);
+
+    console.log("PREVIEW KEY:", key); // ⭐ ADD THIS
+
+    const signedUrl = await getSignedFileUrl(key);
+
+    res.json({ url: signedUrl });
+  } catch (error) {
+    console.error("S3 ERROR 👉", error); // ⭐ IMPORTANT
+    res.status(500).json({ message: "Failed to generate preview URL" });
+  }
+};
+
