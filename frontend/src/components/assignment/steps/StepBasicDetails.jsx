@@ -1,4 +1,6 @@
+import { useRef } from "react";
 export default function StepBasicDetails({ data, setData }) {
+  const fileRef = useRef(null);
   const update = (field, value) => {
     setData((prev) => ({
       ...prev,
@@ -78,7 +80,7 @@ export default function StepBasicDetails({ data, setData }) {
             onChange={(e) => update("academicLevel", e.target.value)}
             className={input}
           >
-            <option value="">Select</option>
+            
             <option value="school">School</option>
             <option value="college">College</option>
             <option value="university">University</option>
@@ -112,11 +114,26 @@ export default function StepBasicDetails({ data, setData }) {
         <div className="mt-4">
           <label className={label}>Upload Assignment File</label>
           <input
+            ref={fileRef}
             type="file"
             accept=".pdf,.doc,.docx"
             onChange={(e) => update("uploadedFiles", e.target.files)}
-            className="text-sm"
+            className="hidden"
           />
+          <button
+            type="button"
+            onClick={() => fileRef.current.click()}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-95"
+          >
+            📎 Choose File
+          </button>
+
+          {/* file name preview */}
+          {data.uploadedFiles && data.uploadedFiles.length > 0 && (
+            <p className="mt-2 text-sm text-gray-600">
+              {data.uploadedFiles[0].name}
+            </p>
+          )}
         </div>
       )}
 
@@ -126,14 +143,10 @@ export default function StepBasicDetails({ data, setData }) {
           <input
             type="checkbox"
             checked={data.frontPageRequired}
-            onChange={(e) =>
-              update("frontPageRequired", e.target.checked)
-            }
+            onChange={(e) => update("frontPageRequired", e.target.checked)}
           />
           Front Page Required
         </label>
-
-
       </div>
     </div>
   );
