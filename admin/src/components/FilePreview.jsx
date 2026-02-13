@@ -20,7 +20,7 @@ export default function FilePreview({ file }) {
       <iframe
         src={fileUrl}
         title={file.filename}
-        className="w-full h-[500px] border rounded"
+        className="w-full h-125 border rounded"
       />
     );
   }

@@ -80,6 +80,16 @@ exports.getAdminFilePreview = async (req, res) => {
     const key = decodeURIComponent(req.query.key);
 
     console.log("PREVIEW KEY:", key); // ⭐ ADD THIS
+    console.log("AWS REGION:", process.env.AWS_REGION);
+    console.log("AWS BUCKET:", process.env.AWS_BUCKET_NAME);
+    console.log(
+      "AWS ACCESS:",
+      process.env.AWS_ACCESS_KEY_ID ? "OK" : "MISSING",
+    );
+    console.log(
+      "AWS SECRET:",
+      process.env.AWS_SECRET_ACCESS_KEY ? "OK" : "MISSING",
+    );
 
     const signedUrl = await getSignedFileUrl(key);
 
@@ -89,4 +99,3 @@ exports.getAdminFilePreview = async (req, res) => {
     res.status(500).json({ message: "Failed to generate preview URL" });
   }
 };
-
