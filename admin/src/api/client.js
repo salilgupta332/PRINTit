@@ -63,6 +63,14 @@ export async function apiFetch(path, options = {}) {
     ...options,
   });
 
+    if (res.status === 401) {
+    localStorage.removeItem("token");
+    
+    window.location.href = "/login";
+    return;
+  }
+
+
   const data = await res.json();
 
   if (!res.ok) {

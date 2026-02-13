@@ -4,9 +4,16 @@ import Assignments from "../pages/Assignments";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import AssignmentDetails from "../pages/AssignmentDetails";
+import { useContext } from "react";
+import { useAuth } from "../context/AuthContext";
+import useAutoLogout from "../hooks/useAutoLogout";
 export default function AppRoutes() {
+  const { logout, isAuthenticated } = useAuth();
+
+  // only run when logged in
+useAutoLogout(isAuthenticated ? logout : null);
   return (
-    <BrowserRouter >
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/assignments" element={<Assignments />} />
