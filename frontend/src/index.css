@@ -1,44 +1,51 @@
 @import "tailwindcss";
 
-/* ============ THEME TOKENS (Tailwind v4 way) ============ */
+/* ================= LOVEABLE TOKEN BRIDGE ================= */
+/* Light mode */
 @theme {
-  --color-background: #ffffff;
-  --color-foreground: #0f172a;
+  --background: 240 10% 97%;
+  --foreground: 240 10% 3.9%;
 
-  --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
+  --card: 240 10% 97%;
+  --card-foreground: 240 10% 3.9%;
 
-  --color-popover: #ffffff;
-  --color-popover-foreground: #0f172a;
+  --primary: 252 95% 64%;
+  --primary-foreground: 0 0% 100%;
 
-  --color-primary: #0ea5e9;
-  --color-primary-foreground: #ffffff;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
 
-  --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #0f172a;
+  --border: 240 5.9% 90%;
+  --radius: 0.75rem;
 
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-
-  --color-accent: #f1f5f9;
-  --color-accent-foreground: #0f172a;
-
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: #0ea5e9;
-
-  --radius: 0.5rem;
+  /* Map to Tailwind v4 color system */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-border: hsl(var(--border));
 }
 
-/* ============ BASE RESET ============ */
-@layer base {
-  * {
-    @apply border-border;
-  }
+/* Dark mode (THIS is what Loveable preview uses) */
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
 
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+
+  --primary: 252 95% 64%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+
+  --border: 240 3.7% 15.9%;
+}
+
+@layer base {
   body {
     @apply bg-background text-foreground;
   }

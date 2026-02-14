@@ -35,7 +35,7 @@ const ServiceCard = ({ icon: Icon, emoji, title, description, items, highlight, 
       <ul className="space-y-2">
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-2 text-sm text-foreground/80">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent flex-shrink-0" />
+            <span className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
             {item.text}
           </li>
         ))}
