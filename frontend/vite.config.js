@@ -8,12 +8,12 @@ export default defineConfig({
     react(),
     tailwindcss(), // ✅ REQUIRED for Tailwind v4
   ],
-   resolve: {
+  resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-    server: {
+  server: {
     proxy: {
       "/api": {
         target: "http://localhost:5000", // backend local
@@ -21,7 +21,8 @@ export default defineConfig({
         secure: false,
       },
     },
-        port: 5173,
-      host: true,
-  }
+    port: 5173,
+    host: true,
+    allowedHosts: [".replit.dev", ".janeway.replit.dev", "localhost"],
+  },
 });
