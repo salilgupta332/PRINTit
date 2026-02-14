@@ -7,7 +7,6 @@ import Dashboard from "./pages/Dashboard";
 import CreateAssignment from "./pages/CreateAssignment";
 import MyAssignments from "./pages/MyAssignments";
 import AssignmentDetails from "./pages/AssignmentDetails";
-
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./layout/DashboardLayout";
 import PublicLayout from "./layout/PublicLayout";

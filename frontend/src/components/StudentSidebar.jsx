@@ -10,7 +10,7 @@ function StudentSidebar() {
 
   return (
     <div className="sidebar">
-      <div className="sidebar-title">📘 Student</div>
+      <div className="sidebar-title" onClick={() => navigate("/")}> PrintIT</div>
 
 
 

@@ -1,14 +1,15 @@
 import Hero from "../components/Hero";
-import Feature from "../components/Feature";
-import CTA from "../components/CTA";
+import ServicesSection from "../components/ServicesSection";
+import Footer from "../components/Footer";
+import Feature from "../components/FeatureSection";
 function Home() {
   return (
     <>
       <Hero />
       <Feature />
-      <CTA />
+      <ServicesSection />
+      <Footer />
       {/* Next sections later */}
-      
     </>
   );
 }
