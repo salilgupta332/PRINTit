@@ -1,7 +1,7 @@
-import Hero from "../components/Hero";
-import ServicesSection from "../components/ServicesSection";
-import Footer from "../components/Footer";
-import Feature from "../components/FeatureSection";
+import Hero from "../components/landing/Hero";
+import ServicesSection from "../components/landing/ServicesSection";
+import Footer from "../components/landing/Footer";
+import Feature from "../components/landing/FeatureSection";
 function Home() {
   return (
     <>

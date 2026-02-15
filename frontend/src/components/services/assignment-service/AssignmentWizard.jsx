@@ -7,7 +7,7 @@ import StepPrintPreferences from "./steps/StepPrintPreferences";
 import StepAddress from "./steps/StepAddress";
 import StepPayment from "./steps/StepPayment";
 
-import { createAssignment } from "../../api/assignmentApi";
+import { createAssignment } from "../../../api/assignmentApi";
 
 function AssignmentWizard() {
   const [step, setStep] = useState(1);

@@ -1,4 +1,4 @@
-import AssignmentWizard from "../components/assignment/AssignmentWizard";
+import AssignmentWizard from "../components/services/assignment-service/AssignmentWizard";
 
 function CreateAssignment() {
   return (

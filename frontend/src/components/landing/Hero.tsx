@@ -1,5 +1,5 @@
 import { ArrowRight, Printer, Zap, Shield } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const Hero = () => {
   return (
