@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { AuthContext } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { Moon, Sun } from "lucide-react";
 
 import {
@@ -34,7 +34,7 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
 
   // 🔥 REAL AUTH
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { isAuthenticated, logout } = useContext(AuthContext) 
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -103,6 +103,16 @@ const Navbar = () => {
             </>
           ) : (
             <>
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-xl border border-border bg-card hover:bg-secondary transition"
+              >
+                {theme === "dark" ? (
+                  <Sun className="w-5 h-5 text-yellow-400" />
+                ) : (
+                  <Moon className="w-5 h-5 text-primary" />
+                )}
+              </button>
               <Button
                 variant="ghost"
                 className="text-foreground hover:text-primary"
