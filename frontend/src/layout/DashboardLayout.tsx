@@ -19,7 +19,7 @@ export default function DashboardLayout() {
       <div
         className={cn(
           "transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-16" : "lg:ml-[270px]",
+          sidebarCollapsed ? "lg:ml-16" : "lg:ml-67.5",
         )}
       >
         {/* Topbar */}

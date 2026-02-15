@@ -56,26 +56,16 @@ const navItems: NavItem[] = [
         title: "Formatting & Cleanup",
         icon: AlignLeft,
         children: [
-          { title: "Margin Fixing", path: "/dashboard/formatting/margin" },
-          { title: "Font Alignment", path: "/dashboard/formatting/font" },
-          { title: "Page Numbering", path: "/dashboard/formatting/numbering" },
-          {
-            title: "Front Page Creation",
-            path: "/dashboard/formatting/frontpage",
-          },
+          { title: "Document Formatting", path: "/dashboard/formatting/Document-Formatting" },
+          
         ],
       },
       {
         title: "Project & Reports",
         icon: FolderKanban,
         children: [
-          { title: "Final Year Projects", path: "/dashboard/projects/final" },
-          { title: "Lab Manuals", path: "/dashboard/projects/lab" },
-          { title: "Case Study Reports", path: "/dashboard/projects/case" },
-          {
-            title: "Internship Reports",
-            path: "/dashboard/projects/internship",
-          },
+          { title: "Project & Report Printing", path: "/dashboard/projects/project-report-printing" },
+         
         ],
       },
       {
@@ -97,7 +87,7 @@ const navItems: NavItem[] = [
         children: [
           {
             title: "Official Document Printing",
-            path: "/dashboard/document-services",
+            path: "/dashboard/official/official-documents",
           },
         ],
       },
