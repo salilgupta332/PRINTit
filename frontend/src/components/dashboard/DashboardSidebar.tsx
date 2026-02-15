@@ -132,7 +132,7 @@ export function DashboardSidebar({
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 h-screen sidebar-gradient text-sidebar-foreground transition-all duration-300 flex flex-col",
-          collapsed ? "w-0 lg:w-16 overflow-hidden" : "w-[270px]"
+          collapsed ? "w-0 lg:w-16 overflow-hidden" : "w-67.5"
         )}
       >
         {/* Logo area */}

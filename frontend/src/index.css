@@ -64,12 +64,3 @@
 
   --border: 240 5.9% 90%;
 }
-
-.light-surface {
-  background: hsl(240 10% 97%);
-  color: hsl(240 10% 3.9%);
-  border-color: hsl(240 5.9% 90%);
-}
-
-
-

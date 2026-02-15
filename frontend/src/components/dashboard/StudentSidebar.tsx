@@ -2,16 +2,22 @@ import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard,
-  ClipboardList,
+  BookOpen,
+  PenTool,
+  AlignLeft,
   FolderKanban,
-  Users,
+  FileText,
+  ClipboardList,
+  Library,
+  Settings,
   HelpCircle,
   ChevronDown,
   ChevronRight,
   Menu,
   X,
   Printer,
-  BookOpen,
+  Users,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +46,7 @@ const navItems: NavItem[] = [
       },
       {
         title: "Assignment Support",
+        icon: ClipboardList,
         children: [
           { title: "Create Assignment", path: "/dashboard/create-assignment" },
           { title: "My Assignments", path: "/dashboard/my-assignments" },
@@ -47,7 +54,7 @@ const navItems: NavItem[] = [
       },
       {
         title: "Formatting & Cleanup",
-
+        icon: AlignLeft,
         children: [
           { title: "Margin Fixing", path: "/dashboard/formatting/margin" },
           { title: "Font Alignment", path: "/dashboard/formatting/font" },
@@ -60,7 +67,7 @@ const navItems: NavItem[] = [
       },
       {
         title: "Project & Reports",
-
+        icon: FolderKanban,
         children: [
           { title: "Final Year Projects", path: "/dashboard/projects/final" },
           { title: "Lab Manuals", path: "/dashboard/projects/lab" },
@@ -73,6 +80,7 @@ const navItems: NavItem[] = [
       },
       {
         title: "Exam Utilities",
+        icon: Library,
         path: "/dashboard/exams",
         children: [
           {
@@ -84,6 +92,7 @@ const navItems: NavItem[] = [
       },
       {
         title: "Document Services",
+        icon: FileText,
         path: "/dashboard/document-services",
         children: [
           {
@@ -116,8 +125,8 @@ export function StudentSidebar({ collapsed, onToggle }) {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-screen w-[270px] z-40",
-        "bg-gradient-to-b from-[#0f172a] via-[#0b132b] to-[#020617] text-white",
+        "fixed left-0 top-0 h-screen w-67.5 z-40",
+        "bg-linear-to-b from-[#0f172a] via-[#0b132b] to-[#020617] text-white",
         "text-white shadow-xl border-r border-white/10",
         collapsed && "lg:w-16",
       )}
@@ -177,7 +186,8 @@ function SidebarItem({
 
           {/* Content */}
           <div className="relative z-10 flex items-center gap-3 w-full">
-            {depth === 0 && <Icon size={18} />}
+           {depth === 0 && <Icon size={18} className="shrink-0" />}
+{depth === 1 && <Icon size={16} className="shrink-0 opacity-80" />}
 
             {!collapsed && (
               <>
@@ -212,29 +222,38 @@ function SidebarItem({
 
   /* ---------- LEAF (ACTUAL PAGE) ---------- */
 
-  return (
-    <Link
-      to={item.path || "#"}
-      style={{ paddingLeft: `${12 + depth * 18}px` }}
-      className={cn(
-        "group relative flex items-center gap-3 py-2 rounded-md text-sm overflow-hidden",
-        isActive(item.path)
-          ? "bg-blue-500 text-white shadow-lg"
-          : "text-slate-300 hover:text-white",
-      )}
-    >
-      {/* Hover background (only if not active) */}
-      {!isActive(item.path) && (
-        <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0" />
+return (
+  <Link
+    to={item.path || "#"}
+    style={{ paddingLeft: `${12 + depth * 18}px` }}
+    className={cn(
+      "group relative flex items-center gap-3 py-2.5 rounded-lg text-sm overflow-hidden transition-all",
+      isActive(item.path)
+        ? "bg-blue-500 text-white shadow-lg"
+        : "text-slate-300 hover:text-white"
+    )}
+  >
+    {/* Hover bg */}
+    {!isActive(item.path) && (
+      <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0" />
+    )}
+
+    {/* Content */}
+    <div className="relative z-10 flex items-center gap-3 w-full">
+
+      {/* ICON FOR MAIN ITEMS */}
+      {depth === 0 && item.icon && (
+        <item.icon size={18} className="shrink-0" />
       )}
 
-      {/* Content */}
-      <div className="relative z-10 flex items-center gap-3">
-        {depth > 0 && (
-          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-        )}
-        {!collapsed && <span>{item.title}</span>}
-      </div>
-    </Link>
-  );
+      {/* DOT FOR CHILD PAGES */}
+      {depth > 0 && (
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 group-hover:bg-white transition-colors" />
+      )}
+
+      {!collapsed && <span>{item.title}</span>}
+    </div>
+  </Link>
+);
+
 }

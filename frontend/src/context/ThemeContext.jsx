@@ -1,42 +1,33 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState("system");
+  const location = useLocation();
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
-  // Detect initial theme
+  // detect dashboard route
+  const isDashboard = location.pathname.startsWith("/dashboard");
+
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
-
-    if (saved) {
-      setTheme(saved);
-      applyTheme(saved);
-    } else {
-      applyTheme("system");
-    }
-  }, []);
-
-  const applyTheme = (mode) => {
     const root = document.documentElement;
 
-    if (mode === "dark") {
-      root.classList.add("dark");
-    } 
-    else if (mode === "light") {
+    // Dashboard → force light
+    if (isDashboard) {
       root.classList.remove("dark");
-    } 
-    else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      root.classList.toggle("dark", prefersDark);
+      return;
     }
-  };
+
+    // Public pages → allow dark
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
+  }, [theme, location.pathname]);
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
   };
 
   return (
