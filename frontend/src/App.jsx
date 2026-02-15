@@ -13,7 +13,7 @@ import PublicLayout from "./layout/PublicLayout";
 import ClassNotes from "./pages/services-page/ClassNotes";
 function App() {
   return (
-    <BrowserRouter>
+  
       <Routes>
 
         {/* PUBLIC ROUTES */}
@@ -41,7 +41,7 @@ function App() {
         </Route>
 
       </Routes>
-    </BrowserRouter>
+    
   );
 }
 

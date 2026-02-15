@@ -8,7 +8,7 @@ export default function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+     <div className="min-h-screen bg-white text-gray-900 !dark:bg-white !dark:text-gray-900">
       {/* Sidebar */}
       <StudentSidebar
         collapsed={sidebarCollapsed}
@@ -28,7 +28,7 @@ export default function DashboardLayout() {
         />
 
         {/* Main content ALWAYS LIGHT */}
-        <main className="min-h-[calc(100vh-64px)] p-6 bg-white text-gray-900">
+         <main className="light-area min-h-[calc(100vh-64px)] p-6 bg-background text-foreground">
           <Outlet />
         </main>
       </div>
