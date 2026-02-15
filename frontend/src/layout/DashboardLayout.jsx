@@ -1,27 +1,34 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { StudentSidebar } from "@/components/dashboard/StudentSidebar";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 import { cn } from "@/lib/utils";
-import { StudentSidebar } from "@/components/dashboard/StudentSidebar"; 
 
 export default function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
+      {/* Sidebar */}
       <StudentSidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
+
+      {/* Content Area */}
       <div
         className={cn(
           "transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-16" : "lg:ml-[270px]"
+          sidebarCollapsed ? "lg:ml-16" : "lg:ml-[270px]",
         )}
       >
-        <DashboardTopbar onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
-        <main className="p-4 md:p-6">
+        {/* Topbar */}
+        <DashboardTopbar
+          onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
+
+        {/* Main content ALWAYS LIGHT */}
+        <main className="min-h-[calc(100vh-64px)] p-6 bg-white text-gray-900">
           <Outlet />
         </main>
       </div>
