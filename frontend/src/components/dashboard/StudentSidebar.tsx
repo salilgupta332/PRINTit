@@ -95,7 +95,6 @@ const navItems: NavItem[] = [
     ],
   },
 
-
   { title: "My Orders", icon: FolderKanban, path: "/orders" },
   { title: "Profile", icon: Users, path: "/profile" },
   { title: "Support", icon: HelpCircle, path: "/support" },
@@ -117,8 +116,10 @@ export function StudentSidebar({ collapsed, onToggle }) {
   return (
     <aside
       className={cn(
-        "fixed top-0 left-0 h-screen sidebar-gradient text-sidebar-foreground transition-all duration-300 flex flex-col",
-        collapsed ? "w-0 lg:w-16 overflow-hidden" : "w-67.5",
+        "fixed left-0 top-0 h-screen w-[270px] z-40",
+        "bg-gradient-to-b from-[#0f172a] via-[#0b132b] to-[#020617] text-white",
+        "text-white shadow-xl border-r border-white/10",
+        collapsed && "lg:w-16",
       )}
     >
       {/* Logo */}
@@ -169,7 +170,7 @@ function SidebarItem({
         <button
           onClick={() => toggleMenu(key)}
           style={{ paddingLeft: `${12 + depth * 18}px` }}
-          className="group relative w-full flex items-center gap-3 py-2.5 rounded-lg text-sm overflow-hidden"
+          className="group relative w-full flex items-center gap-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white transition-colors"
         >
           {/* Hover bg */}
           <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-0" />
@@ -217,7 +218,9 @@ function SidebarItem({
       style={{ paddingLeft: `${12 + depth * 18}px` }}
       className={cn(
         "group relative flex items-center gap-3 py-2 rounded-md text-sm overflow-hidden",
-        isActive(item.path) ? "bg-blue-500 text-white" : "text-foreground",
+        isActive(item.path)
+          ? "bg-blue-500 text-white shadow-lg"
+          : "text-slate-300 hover:text-white",
       )}
     >
       {/* Hover background (only if not active) */}

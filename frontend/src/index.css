@@ -50,3 +50,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+.dashboard-light {
+  --background: 240 10% 97%;
+  --foreground: 240 10% 3.9%;
+
+  --card: 240 10% 97%;
+  --card-foreground: 240 10% 3.9%;
+
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+
+  --border: 240 5.9% 90%;
+}
+
+.light-surface {
+  background: hsl(240 10% 97%);
+  color: hsl(240 10% 3.9%);
+  border-color: hsl(240 5.9% 90%);
+}
+
+
+

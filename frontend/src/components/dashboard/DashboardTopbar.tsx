@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Bell, Search, Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-export function DashboardTopbar({ onMenuToggle }: { onMenuToggle: () => void }) {
+export function DashboardTopbar({ onMenuToggle }) {
   const [profileOpen, setProfileOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setProfileOpen(false);
       }
     };
@@ -17,70 +16,83 @@ export function DashboardTopbar({ onMenuToggle }: { onMenuToggle: () => void }) 
   }, []);
 
   return (
-    <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
-      {/* Left */}
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
+
+      {/* LEFT */}
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuToggle}
-          className="p-2 rounded-lg hover:bg-secondary transition-colors lg:hidden"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
         >
           <Menu size={20} />
         </button>
-        <div className="hidden md:flex items-center gap-2 bg-secondary rounded-lg px-3 py-2 w-72">
-          <Search size={16} className="text-muted-foreground" />
+
+        {/* Search */}
+        <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 w-72">
+          <Search size={16} className="text-gray-500" />
           <input
             type="text"
             placeholder="Search orders, services..."
-            className="bg-transparent text-sm outline-none w-full text-foreground placeholder:text-muted-foreground"
+            className="bg-transparent text-sm outline-none w-full text-gray-800 placeholder:text-gray-400"
           />
         </div>
       </div>
 
-      {/* Right */}
+      {/* RIGHT */}
       <div className="flex items-center gap-3">
-        <button className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
-          <Bell size={20} className="text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
+
+        {/* Bell */}
+        <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+          <Bell size={20} className="text-gray-600" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
         </button>
 
-        {/* Profile dropdown */}
+        {/* Profile */}
         <div ref={dropdownRef} className="relative">
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-secondary transition-colors"
+            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-semibold">
+            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-semibold">
               A
             </div>
+
             <div className="hidden md:block text-left">
-              <p className="text-sm font-medium text-foreground">Admin</p>
-              <p className="text-xs text-muted-foreground">admin@printhub.in</p>
+              <p className="text-sm font-medium text-gray-800">Admin</p>
+              <p className="text-xs text-gray-500">admin@printhub.in</p>
             </div>
-            <ChevronDown size={14} className="text-muted-foreground hidden md:block" />
+
+            <ChevronDown size={14} className="text-gray-500 hidden md:block" />
           </button>
 
+          {/* Dropdown */}
           {profileOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-xl shadow-lg py-2 z-50">
-              <div className="px-4 py-3 border-b border-border">
-                <p className="text-sm font-semibold text-foreground">Admin User</p>
-                <p className="text-xs text-muted-foreground">admin@printhub.in</p>
+            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl py-2 z-50">
+
+              <div className="px-4 py-3 border-b border-gray-200">
+                <p className="text-sm font-semibold text-gray-800">Admin User</p>
+                <p className="text-xs text-gray-500">admin@printhub.in</p>
               </div>
+
               <div className="py-1">
-                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors">
+                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                   <User size={16} />
                   My Profile
                 </button>
-                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors">
+
+                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                   <Settings size={16} />
                   Settings
                 </button>
               </div>
-              <div className="border-t border-border py-1">
-                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors">
+
+              <div className="border-t border-gray-200 py-1">
+                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
                   <LogOut size={16} />
                   Log Out
                 </button>
               </div>
+
             </div>
           )}
         </div>

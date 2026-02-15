@@ -10,7 +10,7 @@ import AssignmentDetails from "./pages/AssignmentDetails";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./layout/DashboardLayout";
 import PublicLayout from "./layout/PublicLayout";
-
+import ClassNotes from "./pages/services-page/ClassNotes";
 function App() {
   return (
     <BrowserRouter>
@@ -36,6 +36,8 @@ function App() {
           <Route path="create-assignment" element={<CreateAssignment />} />
           <Route path="my-assignments" element={<MyAssignments />} />
           <Route path="assignments/:id" element={<AssignmentDetails />} />
+          <Route path="notes/class" element={<ClassNotes />} />
+
         </Route>
 
       </Routes>
