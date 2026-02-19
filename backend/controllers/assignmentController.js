@@ -1,5 +1,5 @@
 const Assignment = require("../models/Assignment");
-
+const { uploadToS3 } = require("../utils/s3Upload");
 /**
  * @desc    Create new assignment
  * @route   POST /api/assignments
@@ -102,19 +102,37 @@ exports.createAssignment = async (req, res) => {
     }
 
     /* =====================
-       FILE HANDLING
-    ====================== */
-    const uploadedFiles =
-      req.files?.uploadedFiles?.map((file) => ({
-        filename: file.originalname,
-        url: `/uploads/${file.filename}`,
-      })) || [];
+   FILE HANDLING (S3 UPLOAD)
+====================== */
 
-    const layoutFiles =
-      req.files?.layoutFiles?.map((file) => ({
-        filename: file.originalname,
-        url: `/uploads/${file.filename}`,
-      })) || [];
+    let uploadedFiles = [];
+    let layoutFiles = [];
+
+    // upload assignment files
+    if (req.files?.uploadedFiles) {
+      uploadedFiles = await Promise.all(
+        req.files.uploadedFiles.map(async (file) => {
+          const s3Key = await uploadToS3(file);
+          return {
+            filename: file.originalname,
+            key: s3Key,
+          };
+        }),
+      );
+    }
+
+    // upload layout files
+    if (req.files?.layoutFiles) {
+      layoutFiles = await Promise.all(
+        req.files.layoutFiles.map(async (file) => {
+          const s3Key = await uploadToS3(file);
+          return {
+            filename: file.originalname,
+            key: s3Key,
+          };
+        }),
+      );
+    }
 
     /* =====================
        FRONT PAGE VALIDATION
@@ -166,5 +184,34 @@ exports.createAssignment = async (req, res) => {
     res.status(500).json({
       message: "Server error while creating assignment",
     });
+  }
+};
+
+
+
+const { getSignedFileUrl } = require("../utils/s3Upload");
+
+exports.getAssignmentFile = async (req, res) => {
+  try {
+    const { assignmentId, fileIndex } = req.params;
+
+    const assignment = await Assignment.findById(assignmentId);
+
+    if (!assignment) {
+      return res.status(404).json({ message: "Assignment not found" });
+    }
+
+    const file = assignment.uploadedFiles[fileIndex];
+
+    if (!file) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    const signedUrl = await getSignedFileUrl(file.key);
+
+    res.json({ url: signedUrl });
+  } catch (err) {
+    console.error("Signed URL Error:", err);
+    res.status(500).json({ message: "Failed to generate file access" });
   }
 };
