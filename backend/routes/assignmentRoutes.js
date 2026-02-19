@@ -3,7 +3,7 @@ const router = express.Router();
 const authMiddleware = require("../middlewares/userAuthMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
 const { createAssignment } = require("../controllers/assignmentController");
-
+const { getAssignmentFile } = require("../controllers/assignmentController");
 
 
 // @route   POST /api/assignments
@@ -20,3 +20,6 @@ router.post(
 );
 
 module.exports = router;
+
+
+router.get("/file/:assignmentId/:fileIndex", authMiddleware, getAssignmentFile);

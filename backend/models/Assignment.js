@@ -51,7 +51,7 @@ const assignmentSchema = new mongoose.Schema(
     uploadedFiles: [
       {
         filename: String,
-        path: String,
+        key: String, // 🔴 store S3 KEY instead of URL
         uploadedAt: {
           type: Date,
           default: Date.now,
@@ -70,7 +70,7 @@ const assignmentSchema = new mongoose.Schema(
     layoutFiles: [
       {
         filename: String,
-        path: String,
+        key: String, // 🔴 store S3 KEY instead of URL
       },
     ],
 

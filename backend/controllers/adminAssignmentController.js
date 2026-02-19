@@ -1,5 +1,5 @@
 const Assignment = require("../models/Assignment");
-
+const { getSignedFileUrl } = require("../utils/s3Upload");
 /**
  * GET /api/admin/assignments
  */
@@ -68,5 +68,23 @@ exports.getAssignmentById = async (req, res) => {
   } catch (error) {
     console.error("Fetch assignment error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+exports.getAdminFilePreview = async (req, res) => {
+  try {
+    const key = decodeURIComponent(req.query.key);
+
+    if (!key) {
+      return res.status(400).json({ message: "File key missing" });
+    }
+
+    const signedUrl = await getSignedFileUrl(key);
+
+    res.json({ url: signedUrl });
+  } catch (error) {
+    console.error("Admin preview error:", error);
+    res.status(500).json({ message: "Failed to generate preview URL" });
   }
 };
