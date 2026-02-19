@@ -1,5 +1,7 @@
 const Assignment = require("../models/Assignment");
 const { getSignedFileUrl } = require("../utils/s3Upload");
+const dynamo = require("../config/dynamo");
+const { UpdateCommand } = require("@aws-sdk/lib-dynamodb");
 /**
  * GET /api/admin/assignments
  */
@@ -41,6 +43,29 @@ exports.updateAssignmentStatus = async (req, res) => {
 
     assignment.status = status;
     await assignment.save();
+    // ===== Sync to DynamoDB =====
+    try {
+      await dynamo.send(
+        new UpdateCommand({
+          TableName: process.env.DYNAMO_TABLE,
+          Key: {
+            assignmentId: assignment._id.toString(),
+          },
+          UpdateExpression: "SET #s = :s, updatedAt = :u",
+          ExpressionAttributeNames: {
+            "#s": "status",
+          },
+          ExpressionAttributeValues: {
+            ":s": status,
+            ":u": new Date().toISOString(),
+          },
+        }),
+      );
+
+      console.log("DynamoDB Status Synced:", assignment._id.toString());
+    } catch (err) {
+      console.error("DynamoDB Status Sync Failed:", err.message);
+    }
 
     res.json({
       success: true,
@@ -70,7 +95,6 @@ exports.getAssignmentById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.getAdminFilePreview = async (req, res) => {
   try {

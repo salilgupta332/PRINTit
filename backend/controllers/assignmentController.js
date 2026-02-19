@@ -1,5 +1,8 @@
 const Assignment = require("../models/Assignment");
 const { uploadToS3 } = require("../utils/s3Upload");
+const dynamo = require("../config/dynamo");
+const { PutCommand } = require("@aws-sdk/lib-dynamodb");
+const mapAssignmentToDynamo = require("../models/dynamoDB/dynamoAssignment");
 /**
  * @desc    Create new assignment
  * @route   POST /api/assignments
@@ -175,6 +178,23 @@ exports.createAssignment = async (req, res) => {
       address,
     });
 
+    // ===== Sync to DynamoDB =====
+    try {
+      const dynamoItem = mapAssignmentToDynamo(assignment);
+
+      await dynamo.send(
+        new PutCommand({
+          TableName: process.env.DYNAMO_TABLE,
+          Item: dynamoItem,
+        }),
+      );
+
+      console.log("DynamoDB Sync Success:", assignment._id.toString());
+    } catch (err) {
+      // Mongo already saved → do not fail API
+      console.error("DynamoDB Sync Failed:", err.message);
+    }
+
     res.status(201).json({
       message: "Assignment created successfully",
       assignment,
@@ -186,8 +206,6 @@ exports.createAssignment = async (req, res) => {
     });
   }
 };
-
-
 
 const { getSignedFileUrl } = require("../utils/s3Upload");
 
