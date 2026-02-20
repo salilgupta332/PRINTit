@@ -4,14 +4,10 @@ import SignupForm from "../components/SignupForm";
 
 function Signup() {
   return (
-    <div >
-   
+    <div>
       <SignupForm />
     </div>
   );
 }
 
 export default Signup;
-
-
-
