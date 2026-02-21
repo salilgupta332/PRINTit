@@ -1,0 +1,226 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 231 76% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 231 76% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 231 76% 55%;
+
+    --radius: 0.6rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 231 76% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 231 76% 96%;
+    --sidebar-accent-foreground: 231 76% 40%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 231 76% 55%;
+
+    --brand: 231 76% 55%;
+    --brand-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 224 30% 8%;
+    --foreground: 210 40% 95%;
+
+    --card: 224 28% 11%;
+    --card-foreground: 210 40% 95%;
+
+    --popover: 224 28% 11%;
+    --popover-foreground: 210 40% 95%;
+
+    --primary: 231 76% 65%;
+    --primary-foreground: 224 30% 8%;
+
+    --secondary: 224 25% 16%;
+    --secondary-foreground: 210 40% 95%;
+
+    --muted: 224 25% 16%;
+    --muted-foreground: 215 20% 60%;
+
+    --accent: 231 76% 65%;
+    --accent-foreground: 224 30% 8%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 224 25% 18%;
+    --input: 224 25% 18%;
+    --ring: 231 76% 65%;
+
+    --sidebar-background: 224 28% 10%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 231 76% 65%;
+    --sidebar-primary-foreground: 224 30% 8%;
+    --sidebar-accent: 231 40% 18%;
+    --sidebar-accent-foreground: 231 76% 75%;
+    --sidebar-border: 224 25% 18%;
+    --sidebar-ring: 231 76% 65%;
+
+    --brand: 231 76% 65%;
+    --brand-foreground: 224 30% 8%;
+  }
+}
+
+@layer base {
+* {
+  border-color: hsl(var(--border));
+}
+
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+/* =========================================================
+   AUTH PAGE ISOLATED THEME (Scoped Purple Theme)
+   Only applies inside .auth-theme
+========================================================= */
+
+@layer base {
+  .auth-theme {
+    --background: 270 30% 98%;
+    --foreground: 260 40% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 260 40% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 260 40% 13%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 260 50% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 270 15% 93%;
+    --muted-foreground: 260 15% 46%;
+
+    --accent: 270 60% 95%;
+    --accent-foreground: 262 83% 45%;
+
+    --border: 270 15% 88%;
+    --input: 270 15% 88%;
+    --ring: 262 83% 58%;
+
+    --auth-gradient: linear-gradient(
+      135deg,
+      hsl(262 83% 58%),
+      hsl(280 75% 50%)
+    );
+    --auth-surface: 270 30% 98%;
+  }
+}
+
+@layer components {
+  .auth-theme .auth-split-left {
+    @apply relative hidden lg:flex lg:w-1/2 items-center justify-center overflow-hidden;
+    background: var(--auth-gradient);
+  }
+
+  .auth-theme .auth-split-right {
+    @apply w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10;
+    background: hsl(var(--background));
+  }
+
+  .auth-theme .auth-form-container {
+    @apply w-full max-w-md space-y-6;
+  }
+
+.auth-input {
+  @apply h-12 rounded-xl border border-border bg-background px-4 text-sm transition-all duration-200;
+  @apply text-foreground placeholder:text-muted-foreground;
+  @apply focus:ring-2 focus:ring-primary/30 focus:border-primary;
+}
+
+  .auth-theme .auth-btn-primary {
+    @apply h-12 w-full rounded-xl font-semibold text-primary-foreground transition-all duration-300;
+    background: var(--auth-gradient);
+    @apply hover:opacity-90 hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98];
+  }
+  .step-indicator {
+    @apply flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold transition-all duration-300;
+  }
+
+  .step-active {
+    background: var(--auth-gradient);
+    @apply text-primary-foreground shadow-lg shadow-primary/30;
+  }
+
+  .step-done {
+    @apply bg-green-500 text-white;
+  }
+
+  .step-pending {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  .step-connector {
+    @apply h-1 flex-1 rounded-full transition-all duration-500;
+  }
+}

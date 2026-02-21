@@ -1,9 +1,10 @@
 const Assignment = require("../models/Assignment");
-const { uploadToS3 } = require("../utils/s3Upload");
+const { uploadToS3, getSignedFileUrl } = require("../utils/s3Upload");
+
 /**
- * @desc    Create new assignment
+ * @desc    Create new assignment (Shop creates for any customer)
  * @route   POST /api/assignments
- * @access  Private (Student)
+ * @access  Public / Shopkeeper
  */
 exports.createAssignment = async (req, res) => {
   try {
@@ -11,7 +12,17 @@ exports.createAssignment = async (req, res) => {
     console.log("REQ FILES:", req.files);
     console.log("CONTENT TYPE:", req.headers["content-type"]);
 
-    const studentId = req.user.id;
+    /* =====================
+       PARSE CUSTOMER
+    ====================== */
+    let parsedCustomer = null;
+    if (req.body.customer) {
+      try {
+        parsedCustomer = JSON.parse(req.body.customer);
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid customer format" });
+      }
+    }
 
     const {
       assignmentType,
@@ -20,16 +31,12 @@ exports.createAssignment = async (req, res) => {
       academicLevel,
       deadline,
       language,
-
       layoutProvided,
       layoutPreference,
-
       frontPageRequired,
       frontPageDetails,
-
       assignmentDescription,
       printPreferences,
-
       deliveryType,
       address,
     } = req.body;
@@ -39,34 +46,25 @@ exports.createAssignment = async (req, res) => {
     ====================== */
     let parsedFrontPageDetails = null;
     let parsedPrintPreferences = null;
+    let parsedAddress = null;
 
-    if (frontPageDetails) {
-      try {
-        parsedFrontPageDetails = JSON.parse(frontPageDetails);
-      } catch (err) {
-        return res.status(400).json({
-          message: "Invalid frontPageDetails format",
-        });
-      }
-    }
-
-    if (printPreferences) {
-      try {
-        parsedPrintPreferences = JSON.parse(printPreferences);
-      } catch (err) {
-        return res.status(400).json({
-          message: "Invalid printPreferences format",
-        });
-      }
+    try {
+      if (frontPageDetails) parsedFrontPageDetails = JSON.parse(frontPageDetails);
+      if (printPreferences) parsedPrintPreferences = JSON.parse(printPreferences);
+      if (address) parsedAddress = JSON.parse(address);
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid JSON format in request" });
     }
 
     /* =====================
-       COMMON VALIDATION
+       REQUIRED VALIDATION
     ====================== */
+    if (!parsedCustomer?.name) {
+      return res.status(400).json({ message: "Customer name is required" });
+    }
+
     if (!assignmentType || !subjectName || !academicLevel || !deadline) {
-      return res.status(400).json({
-        message: "Required fields are missing",
-      });
+      return res.status(400).json({ message: "Required fields are missing" });
     }
 
     /* =====================
@@ -75,83 +73,62 @@ exports.createAssignment = async (req, res) => {
     if (assignmentType === "from_scratch") {
       if (!language) {
         return res.status(400).json({
-          message: "Language is required for from scratch assignment",
+          message: "Language is required for typing assignment",
         });
       }
 
-      if (
-        layoutProvided === "true" &&
-        !layoutPreference &&
-        !req.files?.layoutFiles
-      ) {
+      if (layoutProvided === "true" && !layoutPreference && !req.files?.layoutFiles) {
         return res.status(400).json({
-          message: "Layout preference or layout file is required",
+          message: "Layout preference or layout file required",
         });
       }
     }
 
     if (
       assignmentType === "student_upload" &&
-      (!req.files ||
-        !req.files.uploadedFiles ||
-        req.files.uploadedFiles.length === 0)
+      (!req.files || !req.files.uploadedFiles || req.files.uploadedFiles.length === 0)
     ) {
       return res.status(400).json({
-        message: "Assignment file upload is required for student upload type",
+        message: "Assignment file upload is required",
       });
     }
 
     /* =====================
-   FILE HANDLING (S3 UPLOAD)
-====================== */
-
+       FILE UPLOAD (S3)
+    ====================== */
     let uploadedFiles = [];
     let layoutFiles = [];
 
-    // upload assignment files
     if (req.files?.uploadedFiles) {
       uploadedFiles = await Promise.all(
         req.files.uploadedFiles.map(async (file) => {
           const s3Key = await uploadToS3(file);
-          return {
-            filename: file.originalname,
-            key: s3Key,
-          };
-        }),
+          return { filename: file.originalname, key: s3Key };
+        })
       );
     }
 
-    // upload layout files
     if (req.files?.layoutFiles) {
       layoutFiles = await Promise.all(
         req.files.layoutFiles.map(async (file) => {
           const s3Key = await uploadToS3(file);
-          return {
-            filename: file.originalname,
-            key: s3Key,
-          };
-        }),
+          return { filename: file.originalname, key: s3Key };
+        })
       );
     }
 
     /* =====================
-       FRONT PAGE VALIDATION
+       AUTO FILL FRONT PAGE NAME
     ====================== */
-    if (
-      frontPageRequired === "true" &&
-      !parsedFrontPageDetails?.institute &&
-      !parsedFrontPageDetails?.institutionName
-    ) {
-      return res.status(400).json({
-        message: "Front page details are required",
-      });
+    if (parsedFrontPageDetails && !parsedFrontPageDetails.studentName) {
+      parsedFrontPageDetails.studentName = parsedCustomer.name;
     }
 
     /* =====================
        CREATE ASSIGNMENT
     ====================== */
     const assignment = await Assignment.create({
-      student: studentId,
+      customer: parsedCustomer,
 
       assignmentType,
       subjectName,
@@ -169,10 +146,9 @@ exports.createAssignment = async (req, res) => {
       frontPageDetails: parsedFrontPageDetails,
 
       assignmentDescription,
-
       printPreferences: parsedPrintPreferences,
       deliveryType,
-      address,
+      address: parsedAddress,
     });
 
     res.status(201).json({
@@ -181,34 +157,25 @@ exports.createAssignment = async (req, res) => {
     });
   } catch (error) {
     console.error("Create Assignment Error:", error);
-    res.status(500).json({
-      message: "Server error while creating assignment",
-    });
+    res.status(500).json({ message: "Server error while creating assignment" });
   }
 };
 
-
-
-const { getSignedFileUrl } = require("../utils/s3Upload");
+/* =========================================================
+   GET SIGNED FILE URL
+========================================================= */
 
 exports.getAssignmentFile = async (req, res) => {
   try {
     const { assignmentId, fileIndex } = req.params;
 
     const assignment = await Assignment.findById(assignmentId);
-
-    if (!assignment) {
-      return res.status(404).json({ message: "Assignment not found" });
-    }
+    if (!assignment) return res.status(404).json({ message: "Assignment not found" });
 
     const file = assignment.uploadedFiles[fileIndex];
-
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
-    }
+    if (!file) return res.status(404).json({ message: "File not found" });
 
     const signedUrl = await getSignedFileUrl(file.key);
-
     res.json({ url: signedUrl });
   } catch (err) {
     console.error("Signed URL Error:", err);

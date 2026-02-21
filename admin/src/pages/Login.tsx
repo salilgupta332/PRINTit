@@ -107,7 +107,7 @@ const AdminSignIn = () => {
 
           <p className="text-center text-sm text-muted-foreground">
             Want to register your shop?{" "}
-            <Link to="/admin/signup" className="text-primary font-semibold hover:underline">
+            <Link to="/signup" className="text-primary font-semibold hover:underline">
               Register Now
             </Link>
           </p>

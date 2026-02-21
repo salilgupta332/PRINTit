@@ -40,6 +40,14 @@ function AssignmentWizard() {
     try {
       const fd = new FormData();
 
+      /* ================= CUSTOMER ================= */
+      fd.append(
+        "customer",
+        JSON.stringify({
+          name: formData.fullName,
+        }),
+      );
+
       // basic fields
       fd.append("assignmentType", formData.assignmentType);
       fd.append("assignmentTitle", formData.assignmentTitle);
@@ -65,6 +73,7 @@ function AssignmentWizard() {
         "printPreferences",
         JSON.stringify(formData.printPreferences || {}),
       );
+      fd.append("deliveryType", formData.address?.deliveryType || "home_delivery");
       fd.append("address", JSON.stringify(formData.address || {}));
 
       await createAssignment(fd);
@@ -82,7 +91,7 @@ function AssignmentWizard() {
   };
 
   return (
-    <div className="wizard-container">
+   <div className="wizard-container pb-12">
       <h2 className="text-3xl font-bold text-gray-900 text-center">
         Create Assignment
       </h2>
@@ -140,7 +149,7 @@ function AssignmentWizard() {
 
       {/* Navigation */}
 
-      <div className="nav-buttons">
+      <div className="nav-buttons mt-10 pt-6 border-t border-gray-200 flex gap-3">
         {step > 1 && (
           <button
             type="button"
