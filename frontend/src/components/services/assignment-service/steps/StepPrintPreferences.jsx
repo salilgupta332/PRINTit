@@ -1,126 +1,136 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
-function PrintPreferences({ onChange }) {
-  const [bindingRequired, setBindingRequired] = useState(false);
+function Dropdown({ label, value, options, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
 
-  const update = (key, value) => {
-    onChange((prev) => ({ ...prev, [key]: value }));
-  };
+  useEffect(() => {
+    const close = (e) => !ref.current?.contains(e.target) && setOpen(false);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, []);
+
+  const selected = options.find(o => o.value === value) || options[0];
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h3 className="text-xl font-semibold text-gray-900">
-          Step 2: Print Preferences
-        </h3>
-        <p className="text-sm text-gray-500">
-          Choose how you want your assignment printed
-        </p>
-      </div>
+    <div className="relative" ref={ref}>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between rounded-lg border border-gray-300 px-4 py-2 bg-white hover:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition"
+      >
+        <span>{selected.label}</span>
+        <span className={`transition-transform ${open ? "rotate-180" : ""}`}>⌄</span>
+      </button>
 
-      {/* Top Row: 3 inputs */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Paper Size */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Paper Size
-          </label>
-          <select
-            onChange={(e) => update("paperSize", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2
-                       focus:border-indigo-500 focus:ring-indigo-500"
+      <div className={`absolute z-20 mt-2 w-full rounded-lg border bg-white shadow-lg overflow-hidden transition-all duration-200 ${open ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}>
+        {options.map(opt => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => { onChange(opt.value); setOpen(false); }}
+            className={`w-full text-left px-4 py-2 text-sm hover:bg-indigo-50 transition ${value === opt.value ? "bg-indigo-50 text-indigo-600 font-medium" : "text-gray-700"}`}
           >
-            <option value="A4">A4</option>
-            <option value="A3">A3</option>
-          </select>
-        </div>
-
-        {/* Print Color */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Print Color
-          </label>
-          <select
-            onChange={(e) => update("printType", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2
-                       focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="black_white">Black & White</option>
-            <option value="color">Color</option>
-          </select>
-        </div>
-
-        {/* Print Side */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Print Side
-          </label>
-          <select
-            onChange={(e) => update("printSide", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2
-                       focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="single">Single Side</option>
-            <option value="double">Double Side</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Number of Copies */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Number of Copies
-        </label>
-        <input
-          type="number"
-          min="1"
-          defaultValue={1}
-          onChange={(e) => update("copies", e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2
-                     focus:border-indigo-500 focus:ring-indigo-500"
-        />
-      </div>
-
-      {/* Binding Section */}
-      <div className="grid grid-cols-2 gap-6 items-end">
-        {/* Binding Required */}
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={bindingRequired}
-            onChange={(e) => {
-              setBindingRequired(e.target.checked);
-              update("bindingRequired", e.target.checked);
-            }}
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600
-                       focus:ring-indigo-500"
-          />
-          <span className="text-sm font-medium text-gray-700">
-            Binding Required
-          </span>
-        </div>
-
-        {/* ✅ Binding Type (ONLY when required) */}
-        {bindingRequired && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Binding Type
-            </label>
-            <select
-              onChange={(e) => update("bindingType", e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2
-                         focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value="spiral">Spiral</option>
-              <option value="staple">Staple</option>
-              <option value="hard">Hard Binding</option>
-            </select>
-          </div>
-        )}
+            {opt.label}
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-export default PrintPreferences;
+export default function PrintPreferences({ onChange }) {
+  const [state, setState] = useState({
+    paperSize: "A4",
+    printType: "black_white",
+    printSide: "single",
+    copies: 1,
+    bindingRequired: false,
+    bindingType: "spiral",
+  });
+
+  const update = (key, value) => {
+    setState(prev => ({ ...prev, [key]: value }));
+    onChange(prev => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-xl font-semibold text-gray-900">Step 2: Print Preferences</h3>
+        <p className="text-sm text-gray-500">Choose how you want your assignment printed</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6">
+        <Dropdown
+          label="Paper Size"
+          value={state.paperSize}
+          onChange={(v)=>update("paperSize",v)}
+          options={[
+            {label:"A4 - Standard", value:"A4"},
+            {label:"A3 - Large pages", value:"A3"}
+          ]}
+        />
+
+        <Dropdown
+          label="Print Color"
+          value={state.printType}
+          onChange={(v)=>update("printType",v)}
+          options={[
+            {label:"Black & White", value:"black_white"},
+            {label:"Color", value:"color"}
+          ]}
+        />
+
+        <Dropdown
+          label="Print Side"
+          value={state.printSide}
+          onChange={(v)=>update("printSide",v)}
+          options={[
+            {label:"Single Side", value:"single"},
+            {label:"Double Side", value:"double"}
+          ]}
+        />
+      </div>
+
+      {/* Copies Stepper */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Number of Copies</label>
+        <div className="flex items-center gap-3">
+          <button onClick={()=>update("copies",Math.max(1,state.copies-1))} className="w-10 h-10 rounded-lg border hover:bg-gray-50">−</button>
+          <div className="px-6 py-2 border rounded-lg min-w-[60px] text-center font-medium">{state.copies}</div>
+          <button onClick={()=>update("copies",state.copies+1)} className="w-10 h-10 rounded-lg border hover:bg-gray-50">+</button>
+        </div>
+      </div>
+
+      {/* Binding */}
+      <div className="grid grid-cols-2 gap-6 items-start">
+        <div className="flex items-center justify-between rounded-xl border p-4">
+          <div>
+            <p className="text-sm font-medium text-gray-800">Binding Required</p>
+            <p className="text-xs text-gray-500">Bundle pages professionally</p>
+          </div>
+          <button type="button" onClick={()=>update("bindingRequired",!state.bindingRequired)} className={`w-12 h-6 flex items-center rounded-full p-1 transition ${state.bindingRequired?"bg-indigo-600":"bg-gray-300"}`}>
+            <div className={`bg-white w-4 h-4 rounded-full shadow transform transition ${state.bindingRequired?"translate-x-6":""}`} />
+          </button>
+        </div>
+
+        {state.bindingRequired ? (
+          <Dropdown
+            label="Binding Type"
+            value={state.bindingType}
+            onChange={(v)=>update("bindingType",v)}
+            options={[
+              {label:"Spiral",value:"spiral"},
+              {label:"Staple",value:"staple"},
+              {label:"Hard Binding",value:"hard"}
+            ]}
+          />
+        ) : (
+    <div></div>
+        )}
+      </div>
+    </div>
+  );
+}
