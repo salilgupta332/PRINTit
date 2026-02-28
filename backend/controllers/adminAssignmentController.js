@@ -71,7 +71,6 @@ exports.getAssignmentById = async (req, res) => {
   }
 };
 
-
 exports.getAdminFilePreview = async (req, res) => {
   try {
     const key = decodeURIComponent(req.query.key);

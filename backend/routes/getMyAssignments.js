@@ -10,7 +10,7 @@ const router = express.Router();
 router.get("/my", authMiddleware, async (req, res) => {
   try {
     const assignments = await Assignment.find({
-      "customer.registeredUser": req.user.id
+      "customer.registeredUser": req.user.id,
     }).sort({ createdAt: -1 });
 
     res.json(assignments);
@@ -18,7 +18,6 @@ router.get("/my", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
@@ -38,7 +37,3 @@ router.get("/:id", authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-
-
-
-

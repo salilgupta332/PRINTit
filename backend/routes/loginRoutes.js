@@ -9,7 +9,6 @@ const router = express.Router();
 // @desc    Login user
 // @access  Public
 router.post("/login", async (req, res) => {
-  console.log("LOGIN SECRET:", process.env.JWT_SECRET);
   try {
     const { email, password } = req.body;
 
@@ -30,12 +29,12 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     res.json({
       message: "Login successful",
-      token
+      token,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -44,4 +43,3 @@ router.post("/login", async (req, res) => {
 });
 
 module.exports = router;
-

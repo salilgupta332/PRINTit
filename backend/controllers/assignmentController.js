@@ -49,11 +49,15 @@ exports.createAssignment = async (req, res) => {
     let parsedAddress = null;
 
     try {
-      if (frontPageDetails) parsedFrontPageDetails = JSON.parse(frontPageDetails);
-      if (printPreferences) parsedPrintPreferences = JSON.parse(printPreferences);
+      if (frontPageDetails)
+        parsedFrontPageDetails = JSON.parse(frontPageDetails);
+      if (printPreferences)
+        parsedPrintPreferences = JSON.parse(printPreferences);
       if (address) parsedAddress = JSON.parse(address);
     } catch (err) {
-      return res.status(400).json({ message: "Invalid JSON format in request" });
+      return res
+        .status(400)
+        .json({ message: "Invalid JSON format in request" });
     }
 
     /* =====================
@@ -77,7 +81,11 @@ exports.createAssignment = async (req, res) => {
         });
       }
 
-      if (layoutProvided === "true" && !layoutPreference && !req.files?.layoutFiles) {
+      if (
+        layoutProvided === "true" &&
+        !layoutPreference &&
+        !req.files?.layoutFiles
+      ) {
         return res.status(400).json({
           message: "Layout preference or layout file required",
         });
@@ -86,7 +94,9 @@ exports.createAssignment = async (req, res) => {
 
     if (
       assignmentType === "student_upload" &&
-      (!req.files || !req.files.uploadedFiles || req.files.uploadedFiles.length === 0)
+      (!req.files ||
+        !req.files.uploadedFiles ||
+        req.files.uploadedFiles.length === 0)
     ) {
       return res.status(400).json({
         message: "Assignment file upload is required",
@@ -104,7 +114,7 @@ exports.createAssignment = async (req, res) => {
         req.files.uploadedFiles.map(async (file) => {
           const s3Key = await uploadToS3(file);
           return { filename: file.originalname, key: s3Key };
-        })
+        }),
       );
     }
 
@@ -113,7 +123,7 @@ exports.createAssignment = async (req, res) => {
         req.files.layoutFiles.map(async (file) => {
           const s3Key = await uploadToS3(file);
           return { filename: file.originalname, key: s3Key };
-        })
+        }),
       );
     }
 
@@ -172,7 +182,8 @@ exports.getAssignmentFile = async (req, res) => {
     const { assignmentId, fileIndex } = req.params;
 
     const assignment = await Assignment.findById(assignmentId);
-    if (!assignment) return res.status(404).json({ message: "Assignment not found" });
+    if (!assignment)
+      return res.status(404).json({ message: "Assignment not found" });
 
     const file = assignment.uploadedFiles[fileIndex];
     if (!file) return res.status(404).json({ message: "File not found" });

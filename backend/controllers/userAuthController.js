@@ -3,7 +3,8 @@ const User = require("../models/User");
 
 exports.register = async (req, res) => {
   try {
-    const { fullName, email, password, confirmPassword, mobileNumber } = req.body;
+    const { fullName, email, password, confirmPassword, mobileNumber } =
+      req.body;
 
     if (!fullName || !email || !password || !confirmPassword || !mobileNumber) {
       return res.status(400).json({ message: "All fields are required" });
@@ -24,11 +25,10 @@ exports.register = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      mobileNumber
+      mobileNumber,
     });
 
     res.status(201).json({ message: "User registered successfully" });
-
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
