@@ -126,7 +126,9 @@ exports.createAssignment = async (req, res) => {
 
     /* =====================
        CREATE ASSIGNMENT
+       
     ====================== */
+    parsedCustomer.registeredUser = req.user.id;
     const assignment = await Assignment.create({
       customer: parsedCustomer,
 

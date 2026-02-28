@@ -15,7 +15,9 @@ import AssignmentService from "./pages/AssignmentService";
 import ClassNotesService from "./pages/ClassNotesService";
 import ServicePage from "./pages/ServicePage";
 import Profile from "./pages/Profile";
+import { AllOrders } from "./pages/AssignmentOrder";
 import NotFound from "./pages/NotFound";
+
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,7 @@ const App = () => (
                 <Route path="orders" element={<DashboardHome />} />
                 <Route path="help" element={<ServicePage />} />
                 <Route path="settings" element={<ServicePage />} />
+                <Route path="my-assignments" element={<AllOrders />} />
                 {/* Add future service routes here */}
               </Route>
               <Route path="*" element={<NotFound />} />

@@ -10,7 +10,7 @@ const router = express.Router();
 router.get("/my", authMiddleware, async (req, res) => {
   try {
     const assignments = await Assignment.find({
-      student: req.user.id
+      "customer.registeredUser": req.user.id
     }).sort({ createdAt: -1 });
 
     res.json(assignments);
