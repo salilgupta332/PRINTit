@@ -1,0 +1,80 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: printit-ingress
+  namespace: printit
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+spec:
+  ingressClassName: alb
+  rules:
+
+  # =========================
+  # MAIN DOMAIN
+  # =========================
+  - host: speedybites.in
+    http:
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: backend-service
+              port:
+                number: 5000
+
+
+
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: frontend-service
+              port:
+                number: 80
+
+  # =========================
+  # WWW DOMAIN
+  # =========================
+  - host: www.speedybites.in
+    http:
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: backend-service
+              port:
+                number: 5000
+
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: frontend-service
+              port:
+                number: 80
+
+  # =========================
+  # ADMIN DOMAIN
+  # =========================
+  - host: admin.speedybites.in
+    http:
+      paths:
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: backend-service
+              port:
+                number: 5000
+
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: admin-service
+              port:
+                number: 80

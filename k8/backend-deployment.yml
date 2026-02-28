@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: printit
+  labels:
+    role: backend
+    env: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: backend
+  template:
+    metadata:
+      labels:
+        role: backend
+    spec:
+      containers:
+        - name: backend
+          image: 683745388773.dkr.ecr.ap-south-1.amazonaws.com/printit-backend:latest
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - secretRef:
+                name: backend-secret
+
+     
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: printit
+spec:
+  type: ClusterIP
+  selector:
+    role: backend
+  ports:
+    - port: 5000
+      targetPort: 5000
+

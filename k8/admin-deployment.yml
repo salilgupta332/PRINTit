@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-deployment
+  namespace: printit
+  labels:
+    role: admin
+    env: demo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      role: admin
+  template:
+    metadata:
+      labels:
+        role: admin
+    spec:
+      containers:
+      - name: admin
+        image: 683745388773.dkr.ecr.ap-south-1.amazonaws.com/printit-admin:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5174
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-service
+  namespace: printit
+spec:
+  type: ClusterIP
+  selector:
+    role: admin
+  ports:
+    - port: 80
+      targetPort: 5174
