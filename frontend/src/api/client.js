@@ -1,7 +1,6 @@
 // src/api/client.js
 
 export const API_BASE = "/api";
-
 export async function apiFetch(path, options = {}) {
   const token = localStorage.getItem("token");
 

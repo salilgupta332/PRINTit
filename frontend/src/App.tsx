@@ -17,6 +17,7 @@ import ServicePage from "./pages/ServicePage";
 import Profile from "./pages/Profile";
 import { AllOrders } from "./pages/AssignmentOrder";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
 
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<DashboardHome />} />
                 <Route path="assignment" element={<AssignmentService />} />
@@ -48,6 +50,7 @@ const App = () => (
                 <Route path="help" element={<ServicePage />} />
                 <Route path="settings" element={<ServicePage />} />
                 <Route path="my-assignments" element={<AllOrders />} />
+               
                 {/* Add future service routes here */}
               </Route>
               <Route path="*" element={<NotFound />} />

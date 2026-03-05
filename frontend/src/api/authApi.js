@@ -31,3 +31,25 @@ export const signupUser = async ({
     }),
   });
 };
+
+
+
+export const forgotPassword = async (email) => {
+  return apiFetch("/auth/forgot-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+};
+
+export const resetPassword = async (token, password) => {
+  return apiFetch(`/auth/reset-password/${token}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  });
+};

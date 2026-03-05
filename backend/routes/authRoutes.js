@@ -1,11 +1,17 @@
 const express = require("express");
-const { register } = require("../controllers/userAuthController");
+const {
+  register,
+  forgotPassword,
+  resetPassword 
+} = require("../controllers/userAuthController");
 
 const router = express.Router();
 
-// @route   POST /api/auth/register
-// @desc    Register student user
-// @access  Public
+// ✅ Correct - Use controller
 router.post("/register", register);
+
+// Forgot Password
+router.post("/forgot-password", forgotPassword);
+router.put("/reset-password/:token", resetPassword);
 
 module.exports = router;

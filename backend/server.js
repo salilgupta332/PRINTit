@@ -23,8 +23,8 @@ app.use("/api/assignments", require("./routes/assignmentRoutes"));
 app.use("/api/assignments", require("./routes/getMyAssignments"));
 
 // ---------- AUTH ROUTES ----------
-app.use("/api/auth", express.json(), require("./routes/authRoutes"));
-app.use("/api/auth", express.json(), require("./routes/loginRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/auth", require("./routes/loginRoutes"));
 
 const adminAuthRoutes = require("./routes/adminRoutes/adminAuthRoutes");
 const adminSignupRoutes = require("./routes/adminRoutes/adminSignup");
