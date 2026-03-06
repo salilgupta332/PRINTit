@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import { AllOrders } from "./pages/AssignmentOrder";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import VerifyOtp from "./pages/VerifyOtp";
 
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
                <Route path="/reset-password/:token" element={<ResetPassword />} />
+               <Route path="/verify-otp" element={<VerifyOtp />} />
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<DashboardHome />} />
                 <Route path="assignment" element={<AssignmentService />} />

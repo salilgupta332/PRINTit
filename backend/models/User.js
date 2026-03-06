@@ -33,6 +33,13 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "admin"],
       default: "student",
     },
+    resetOtp: {
+      type: String,
+    },
+
+    resetOtpExpire: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );

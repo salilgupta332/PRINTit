@@ -53,3 +53,13 @@ export const resetPassword = async (token, password) => {
     body: JSON.stringify({ password }),
   });
 };
+
+export const resetPasswordOtp = async (email, otp, password) => {
+  return apiFetch("/auth/reset-password-otp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, otp, password }),
+  });
+};
