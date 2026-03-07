@@ -62,6 +62,8 @@ const navItems: NavItem[] = [
       {
         icon: FileCheck, label: "Document Services", children: [
           { label: "Official Document Printing", path: "/dashboard/official-docs" },
+           { label: "Certificate Printing", path: "/dashboard/certificate-printing" },
+          { label: "Lamination Service", path: "/dashboard/lamination" },
         ],
       },
       {

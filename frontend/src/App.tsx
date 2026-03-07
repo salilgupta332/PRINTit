@@ -19,6 +19,9 @@ import { AllOrders } from "./pages/AssignmentOrder";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyOtp from "./pages/VerifyOtp";
+import OfficialDocsService from "./pages/OfficialDocsService";
+import AadhaarPrintService from "./pages/AadhaarPrintService";
+import PANCardPrintService from "./pages/PANCardPrintService";
 
 
 const queryClient = new QueryClient();
@@ -43,7 +46,13 @@ const App = () => (
                 <Route path="assignment" element={<AssignmentService />} />
                 <Route path="class-notes" element={<ClassNotesService />} />
                 <Route path="notes" element={<ServicePage />} />
-                <Route path="official-docs" element={<ServicePage />} />
+                <Route path="official-docs" element={<OfficialDocsService />} />
+                <Route path="official-docs/aadhaar" element={<AadhaarPrintService />} />
+                <Route path="official-docs/pan" element={<PANCardPrintService />} />
+                <Route path="official-docs/voter-id" element={<ServicePage />} />
+                <Route path="official-docs/driving-license" element={<ServicePage />} />
+                <Route path="certificate-printing" element={<ServicePage />} />
+                <Route path="lamination" element={<ServicePage />} />
                 <Route path="exam-utilities" element={<ServicePage />} />
                 <Route path="business" element={<ServicePage />} />
                 <Route path="bulk" element={<ServicePage />} />
