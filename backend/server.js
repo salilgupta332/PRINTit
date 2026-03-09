@@ -31,6 +31,8 @@ const adminSignupRoutes = require("./routes/adminRoutes/adminSignup");
 const adminAssignmentsRoutes = require("./routes/adminRoutes/adminAssignments");
 const adminDashboardRoutes = require("./routes/adminRoutes/adminDashboardRoutes");
 const aadhaarRoutes = require("./routes/userRoutes/aadhaarRoutes");
+const panRoutes = require("./routes/userRoutes/panRoutes");
+app.use("/api/user", panRoutes);
 app.use("/api/user", aadhaarRoutes);
 app.use("/api/admin", adminDashboardRoutes);
 app.use("/api/admin", require("./routes/adminRoutes/adminProtectedRoutes"));
