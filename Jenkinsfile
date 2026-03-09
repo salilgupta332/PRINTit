@@ -16,7 +16,7 @@ pipeline {
 
         stage("Checkout") {
             steps {
-                git branch: 'main',
+                git branch: 'dev',
                     url: 'https://github.com/salilgupta332/PRINTit.git'
             }
         }
