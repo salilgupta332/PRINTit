@@ -10,10 +10,11 @@ const s3 = new S3Client({
   },
 });
 
-// upload
-exports.uploadToS3 = async (file) => {
+exports.uploadToS3 = async (file, folder = "misc") => {
+
   const fileExt = file.originalname.split(".").pop();
-  const key = `assignments/${crypto.randomBytes(16).toString("hex")}.${fileExt}`;
+
+  const key = `${folder}/${crypto.randomBytes(16).toString("hex")}.${fileExt}`;
 
   await s3.send(
     new PutObjectCommand({
@@ -24,19 +25,16 @@ exports.uploadToS3 = async (file) => {
     })
   );
 
-  return key; // 🔴 now we return KEY not URL
+  return key;
 };
 
-// secure download link
 exports.getSignedFileUrl = async (key) => {
+
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: key,
-
     ResponseContentDisposition: "inline",
-    ResponseContentType: "application/pdf",
   });
 
-  const signedUrl = await getSignedUrl(s3, command, { expiresIn: 60 });
-  return signedUrl;
+  return await getSignedUrl(s3, command, { expiresIn: 60 });
 };

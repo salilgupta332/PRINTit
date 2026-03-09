@@ -91,13 +91,53 @@ export default function AadhaarPrintService() {
     setForm((prev) => ({ ...prev, [field]: value }));
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
-  const handleSubmit = () => {
-    // TODO: Connect to backend API
-    toast({ title: "Order Submitted!", description: "Your Aadhaar print order has been placed." });
-    setForm(initialForm);
-    setStep(0);
-    navigate("/dashboard/official-docs");
-  };
+
+
+
+const handleSubmit = async () => {
+  try {
+
+    const formData = new FormData();
+
+    // append fields
+    Object.entries(form).forEach(([key, value]) => {
+      if (key !== "uploadFile") {
+        formData.append(key, value as any);
+      }
+    });
+
+    // append file correctly
+    if (form.uploadFile) {
+      formData.append("file", form.uploadFile);
+    }
+
+    const res = await fetch("http://localhost:5000/api/user/aadhaar-print", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message);
+
+    toast({
+      title: "Order Submitted!",
+      description: "Your Aadhaar print order has been placed."
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    toast({
+      title: "Error",
+      description: "Failed to submit order",
+      variant: "destructive"
+    });
+  }
+};
+
+
   const handleFileUpload = (file: File | null) => {
     if (file) {
       const maxSize = 5 * 1024 * 1024; // 5MB
