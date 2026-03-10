@@ -40,11 +40,19 @@ exports.updateAssignmentStatus = async (req, res) => {
     }
 
     assignment.status = status;
-    assignment.activityLog.push({
-      action: `Status changed to ${status}`,
-      by: "Admin",
-      icon: "accept",
-    });
+const iconMap = {
+  requested: "create",
+  in_progress: "accept",
+  printing: "printing",
+  dispatched: "ready",
+  delivered: "delivered",
+};
+
+assignment.activityLog.push({
+  action: `Status changed to ${status}`,
+  by: "Admin",
+  icon: iconMap[status] || "accept",
+});
     await assignment.save();
 
     res.json({

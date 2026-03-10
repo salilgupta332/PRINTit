@@ -44,249 +44,12 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { getOrderById, updateOrderStatus, updateOrderNote } from "@/api/orders";
 
-// Mock order data
-const ordersData: Record<string, any> = {
-  "ORD-001": {
-    id: "#ORD-001",
-    date: "20 Feb 2026, 10:15 AM",
-    customer: {
-      name: "Rahul Sharma",
-      phone: "+91 98765 43210",
-      email: "rahul.sharma@email.com",
-      address: "B-12, Sector 22, Noida, UP 201301",
-    },
-    service: "Notes Print",
-    printType: "Black & White",
-    paperSize: "A4",
-    printSide: "Single Side",
-    pages: 45,
-    copies: 2,
-    binding: "Spiral Binding",
-    lamination: "None",
-    status: "Printing",
-    paymentStatus: "Paid",
-    amount: "₹90",
-    files: [
-      { name: "physics_notes_ch1.pdf", type: "PDF", size: "2.3 MB" },
-      { name: "physics_notes_ch2.pdf", type: "PDF", size: "1.8 MB" },
-    ],
-    activityLog: [
-      {
-        time: "10:15 AM",
-        date: "20 Feb 2026",
-        action: "Order Created",
-        by: "Customer",
-        icon: "create",
-      },
-      {
-        time: "10:18 AM",
-        date: "20 Feb 2026",
-        action: "Payment received via UPI",
-        by: "System",
-        icon: "payment",
-      },
-      {
-        time: "10:25 AM",
-        date: "20 Feb 2026",
-        action: "Order accepted by admin",
-        by: "Admin",
-        icon: "accept",
-      },
-      {
-        time: "10:40 AM",
-        date: "20 Feb 2026",
-        action: "Printing started",
-        by: "Admin",
-        icon: "printing",
-      },
-    ],
-    notes: "Customer requested urgent delivery. Double-check page alignment.",
-    priority: "High",
-    estimatedCompletion: "20 Feb 2026, 2:00 PM",
-  },
-  "ORD-002": {
-    id: "#ORD-002",
-    date: "20 Feb 2026, 11:30 AM",
-    customer: {
-      name: "Priya Singh",
-      phone: "+91 87654 32109",
-      email: "priya.singh@email.com",
-      address: "A-5, Green Park, Delhi 110016",
-    },
-    service: "Assignment",
-    printType: "Color",
-    paperSize: "A4",
-    printSide: "Double Side",
-    pages: 12,
-    copies: 1,
-    binding: "Staple",
-    lamination: "Front Page Only",
-    status: "Pending",
-    paymentStatus: "Pending",
-    amount: "₹24",
-    files: [{ name: "math_assignment.pdf", type: "PDF", size: "4.1 MB" }],
-    activityLog: [
-      {
-        time: "11:30 AM",
-        date: "20 Feb 2026",
-        action: "Order Created",
-        by: "Customer",
-        icon: "create",
-      },
-    ],
-    notes: "",
-    priority: "Normal",
-    estimatedCompletion: "21 Feb 2026, 10:00 AM",
-  },
-  "ORD-003": {
-    id: "#ORD-003",
-    date: "19 Feb 2026, 09:00 AM",
-    customer: {
-      name: "Amit Kumar",
-      phone: "+91 76543 21098",
-      email: "amit.k@email.com",
-      address: "C-22, Lajpat Nagar, Delhi 110024",
-    },
-    service: "Official Doc",
-    printType: "Black & White",
-    paperSize: "A4",
-    printSide: "Single Side",
-    pages: 8,
-    copies: 3,
-    binding: "None",
-    lamination: "Both Sides",
-    status: "Completed",
-    paymentStatus: "Paid",
-    amount: "₹40",
-    files: [
-      { name: "offer_letter.pdf", type: "PDF", size: "0.8 MB" },
-      { name: "experience_cert.pdf", type: "PDF", size: "0.5 MB" },
-      { name: "salary_slip.pdf", type: "PDF", size: "0.3 MB" },
-    ],
-    activityLog: [
-      {
-        time: "09:00 AM",
-        date: "19 Feb 2026",
-        action: "Order Created",
-        by: "Customer",
-        icon: "create",
-      },
-      {
-        time: "09:05 AM",
-        date: "19 Feb 2026",
-        action: "Payment received via Cash",
-        by: "Admin",
-        icon: "payment",
-      },
-      {
-        time: "09:10 AM",
-        date: "19 Feb 2026",
-        action: "Order accepted by admin",
-        by: "Admin",
-        icon: "accept",
-      },
-      {
-        time: "09:30 AM",
-        date: "19 Feb 2026",
-        action: "Printing started",
-        by: "Admin",
-        icon: "printing",
-      },
-      {
-        time: "10:00 AM",
-        date: "19 Feb 2026",
-        action: "Printing completed",
-        by: "System",
-        icon: "complete",
-      },
-      {
-        time: "10:15 AM",
-        date: "19 Feb 2026",
-        action: "Ready for pickup",
-        by: "Admin",
-        icon: "ready",
-      },
-      {
-        time: "11:00 AM",
-        date: "19 Feb 2026",
-        action: "Picked up by customer",
-        by: "Admin",
-        icon: "delivered",
-      },
-    ],
-    notes: "All documents verified. Customer collected in person.",
-    priority: "Normal",
-    estimatedCompletion: "19 Feb 2026, 11:00 AM",
-  },
-};
-
-// Fill remaining orders with variations
-["ORD-004", "ORD-005", "ORD-006", "ORD-007", "ORD-008"].forEach((id, i) => {
-  const names = [
-    "Sneha Patel",
-    "Dev Rao",
-    "Kavya Reddy",
-    "Rohan Gupta",
-    "Anjali Mehta",
-  ];
-  const services = [
-    "Binding",
-    "Lamination",
-    "Notes Print",
-    "Assignment",
-    "Official Doc",
-  ];
-  const statuses = [
-    "Completed",
-    "Pending",
-    "Completed",
-    "Cancelled",
-    "Printing",
-  ];
-  const payStatuses = ["Paid", "Pending", "Paid", "Refunded", "Paid"];
-  const amounts = ["₹130", "₹50", "₹180", "₹40", "₹75"];
-  ordersData[id] = {
-    id: `#${id}`,
-    date: `${18 - i} Feb 2026, 10:00 AM`,
-    customer: {
-      name: names[i],
-      phone: "+91 99999 00000",
-      email: `${names[i].toLowerCase().replace(" ", ".")}@email.com`,
-      address: "Delhi, India",
-    },
-    service: services[i],
-    printType: i % 2 === 0 ? "Black & White" : "Color",
-    paperSize: "A4",
-    printSide: i % 2 === 0 ? "Single Side" : "Double Side",
-    pages: [60, 5, 90, 20, 15][i],
-    copies: 1,
-    binding: "None",
-    lamination: "None",
-    status: statuses[i],
-    paymentStatus: payStatuses[i],
-    amount: amounts[i],
-    files: [{ name: "document.pdf", type: "PDF", size: "1.5 MB" }],
-    activityLog: [
-      {
-        time: "10:00 AM",
-        date: `${18 - i} Feb 2026`,
-        action: "Order Created",
-        by: "Customer",
-        icon: "create",
-      },
-    ],
-    notes: "",
-    priority: "Normal",
-    estimatedCompletion: `${18 - i} Feb 2026, 4:00 PM`,
-  };
-});
-
 const statusOptions = [
-  { value: "requested", label: "Requested", icon: Clock },
-  { value: "in_progress", label: "In Progress", icon: Settings2 },
-  { value: "printing", label: "Printing", icon: Printer },
-  { value: "dispatched", label: "Dispatched", icon: Truck },
-  { value: "delivered", label: "Delivered", icon: MapPin },
+  { value: "requested", label: "Requested", icon: Clock, color: "text-muted-foreground" },
+  { value: "in_progress", label: "In Progress", icon: Settings2, color: "text-blue-500" },
+  { value: "printing", label: "Printing", icon: Printer, color: "text-blue-600" },
+  { value: "dispatched", label: "Dispatched", icon: Truck, color: "text-purple-600" },
+  { value: "delivered", label: "Delivered", icon: MapPin, color: "text-green-600" },
 ];
 
 const statusColors: Record<string, string> = {
@@ -335,7 +98,7 @@ const OrderDetail = () => {
         const data = await getOrderById(orderId);
 
         const normalizedOrder = {
-          id: data._id,
+          id: data.orderNumber || data._id,
           date: new Date(data.createdAt).toLocaleString(),
 
           service:
@@ -381,32 +144,32 @@ const OrderDetail = () => {
             })) || [],
 
           activityLog:
-  data.activityLog?.map((log: any) => {
-    let actionText = log.action;
+            data.activityLog?.map((log: any) => {
+              let actionText = log.action;
 
-    // format status messages
-    if (log.action.includes("Status changed to")) {
-      const status = log.action.split("Status changed to ")[1];
+              // format status messages
+              if (log.action.includes("Status changed to")) {
+                const status = log.action.split("Status changed to ")[1];
 
-      const statusMap: any = {
-        requested: "Order requested",
-        in_progress: "Order accepted by admin",
-        printing: "Printing started",
-        dispatched: "Order dispatched",
-        delivered: "Order delivered",
-      };
+                const statusMap: any = {
+                  requested: "Order requested",
+                  in_progress: "Order accepted by admin",
+                  printing: "Printing started",
+                  dispatched: "Order dispatched",
+                  delivered: "Order delivered",
+                };
 
-      actionText = statusMap[status] || log.action;
-    }
+                actionText = statusMap[status] || log.action;
+              }
 
-    return {
-      action: actionText,
-      by: log.by,
-      icon: log.icon,
-      time: new Date(log.createdAt).toLocaleTimeString(),
-      date: new Date(log.createdAt).toLocaleDateString(),
-    };
-  }) || [],
+              return {
+                action: actionText,
+                by: log.by,
+                icon: log.icon,
+                time: new Date(log.createdAt).toLocaleTimeString(),
+                date: new Date(log.createdAt).toLocaleDateString(),
+              };
+            }) || [],
           notes: data.assignmentDescription || "",
           priority: "Normal",
         };
@@ -452,48 +215,47 @@ const OrderDetail = () => {
     );
   }
 
-const handleStatusUpdate = async () => {
-  try {
-    await updateOrderStatus(orderId, { status });
+  const handleStatusUpdate = async () => {
+    try {
+      await updateOrderStatus(orderId, { status });
 
-    // update order status
-    setOrder({
-      ...order,
-      status
-    });
+      // update order status
+      setOrder({
+        ...order,
+        status,
+      });
 
-    // convert status to readable action
-    const statusMap: any = {
-      requested: "Order requested",
-      in_progress: "Order accepted by admin",
-      printing: "Printing started",
-      dispatched: "Order dispatched",
-      delivered: "Order delivered",
-    };
+      // convert status to readable action
+      const statusMap: any = {
+        requested: "Order requested",
+        in_progress: "Order accepted by admin",
+        printing: "Printing started",
+        dispatched: "Order dispatched",
+        delivered: "Order delivered",
+      };
 
-    const newLog = {
-      action: statusMap[status] || `Status changed to ${status}`,
-      by: "Admin",
-      icon: "accept",
-      time: new Date().toLocaleTimeString(),
-      date: new Date().toLocaleDateString(),
-    };
+      const newLog = {
+        action: statusMap[status] || `Status changed to ${status}`,
+        by: "Admin",
+        icon: "accept",
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString(),
+      };
 
-    // ⭐ update activity log instantly
-    setActivityLog(prev => [...prev, newLog]);
+      // ⭐ update activity log instantly
+      setActivityLog((prev) => [...prev, newLog]);
 
-    toast({
-      title: "Status Updated",
-      description: `Order status changed to ${status}`,
-    });
-
-  } catch (err) {
-    toast({
-      title: "Error",
-      description: "Failed to update status",
-    });
-  }
-};
+      toast({
+        title: "Status Updated",
+        description: `Order status changed to ${status}`,
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+      });
+    }
+  };
 
   const handleAddNote = async () => {
     try {
@@ -733,6 +495,7 @@ const handleStatusUpdate = async () => {
                     .reverse()
                     .map((log: any, i: number) => {
                       const Icon = activityIcons[log.icon] || Clock;
+                      const isLatest = i === 0;
                       return (
                         <div
                           key={i}
@@ -742,7 +505,11 @@ const handleStatusUpdate = async () => {
                             <Icon className="h-3.5 w-3.5 text-primary" />
                           </div>
                           <div className="flex-1 pt-0.5">
-                            <p className="text-sm font-medium">{log.action}</p>
+                            <p
+                              className={`text-sm font-medium ${isLatest ? "text-primary" : ""}`}
+                            >
+                              {log.action}
+                            </p>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-xs text-muted-foreground">
                                 {log.time}

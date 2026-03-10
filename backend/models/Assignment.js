@@ -5,6 +5,11 @@ const assignmentSchema = new mongoose.Schema(
     /* =====================
        BASIC INFO
     ====================== */
+
+    orderNumber: {
+      type: String,
+      unique: true,
+    },
     customer: {
       name: {
         type: String,
@@ -175,6 +180,7 @@ const assignmentSchema = new mongoose.Schema(
     /* =====================
        STATUS & PRICING
     ====================== */
+
     status: {
       type: String,
       enum: ["requested", "in_progress", "printing", "dispatched", "delivered"],
@@ -185,23 +191,24 @@ const assignmentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
     activityLog: [
-  {
-    action: String,
-    by: {
-      type: String,
-      default: "system",
-    },
-    icon: {
-      type: String,
-      default: "create",
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-],
+      {
+        action: String,
+        by: {
+          type: String,
+          default: "system",
+        },
+        icon: {
+          type: String,
+          default: "create",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true },
 );

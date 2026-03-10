@@ -138,8 +138,21 @@ exports.createAssignment = async (req, res) => {
        CREATE ASSIGNMENT
        
     ====================== */
+    const lastOrder = await Assignment.findOne().sort({ createdAt: -1 });
+
+    let nextNumber = 1;
+
+    if (lastOrder && lastOrder.orderNumber) {
+      const lastNum = parseInt(lastOrder.orderNumber.split("-")[1]);
+      nextNumber = lastNum + 1;
+    }
+
+    const orderNumber = `ORD-${String(nextNumber).padStart(4, "0")}`;
+
     parsedCustomer.registeredUser = req.user.id;
     const assignment = await Assignment.create({
+        orderNumber,
+
       customer: parsedCustomer,
 
       assignmentType,

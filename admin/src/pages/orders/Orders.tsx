@@ -53,7 +53,8 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
 
         // ===== TRANSFORM TO UI FORMAT =====
         const mapped = assignments.map((a) => ({
-          id: a._id,
+            id: a.orderNumber || a._id,
+  mongoId: a._id,
           customer: a.customer?.name || a.frontPageDetails?.studentName || "Unknown Student",
             service:
     a.assignmentType === "from_scratch"
@@ -182,7 +183,7 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
                         variant="outline"
                         size="sm"
                         className="gap-1 h-7"
-                        onClick={() => navigate(`/orders/${order.id}`)}
+                       onClick={() => navigate(`/orders/${order.mongoId}`)}
                       >
                         <Eye size={12} />
                         View
