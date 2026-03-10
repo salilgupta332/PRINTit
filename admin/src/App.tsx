@@ -13,6 +13,8 @@ import ProtectedRoute from "@/routes/ProtectedRoute";
 
 import LoginPage from "@/pages/LoginPage";
 import Dashboard from "@/pages/dashboard/Dashboard";
+import OrderDetail from "@/pages/orders/OrderDetail";
+
 import {
   AllOrders,
   PendingOrders,
@@ -83,6 +85,7 @@ const App = () => (
               <Route path="/orders/pending" element={<PendingOrders />} />
               <Route path="/orders/printing" element={<PrintingOrders />} />
               <Route path="/orders/completed" element={<CompletedOrders />} />
+              <Route path="/orders/:orderId" element={<OrderDetail />} />
 
               {/* Customers */}
               <Route path="/customers/all" element={<AllCustomers />} />

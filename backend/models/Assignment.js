@@ -185,6 +185,23 @@ const assignmentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    activityLog: [
+  {
+    action: String,
+    by: {
+      type: String,
+      default: "system",
+    },
+    icon: {
+      type: String,
+      default: "create",
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+],
   },
   { timestamps: true },
 );

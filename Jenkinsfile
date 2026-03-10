@@ -11,7 +11,7 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         ECR_FRONTEND = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/printit-frontend"
         ECR_BACKEND = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/printit-backend"
-         ECR_ADMIN    = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/printit-admin"
+        ECR_ADMIN    = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/printit-admin"
     }
     stages {
         stage("Checkout") {

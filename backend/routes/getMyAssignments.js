@@ -23,7 +23,7 @@ router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const assignment = await Assignment.findOne({
       _id: req.params.id,
-      student: req.user.id, // security: only owner can view
+      "customer.registeredUser": req.user.id,  // security: only owner can view
     });
 
     if (!assignment) {

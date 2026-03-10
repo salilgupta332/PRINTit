@@ -3,6 +3,7 @@ import { Search, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -13,7 +14,7 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 import { apiGet } from "@/api/client";
-import { useNavigate } from "react-router-dom";
+
 
 const statusColors: Record<string, string> = {
   printing: "bg-blue-500/10 text-blue-600",
@@ -181,7 +182,7 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
                         variant="outline"
                         size="sm"
                         className="gap-1 h-7"
-                        onClick={() => navigate(`/assignments/${order.id}`)}
+                        onClick={() => navigate(`/orders/${order.id}`)}
                       >
                         <Eye size={12} />
                         View

@@ -40,6 +40,11 @@ exports.updateAssignmentStatus = async (req, res) => {
     }
 
     assignment.status = status;
+    assignment.activityLog.push({
+      action: `Status changed to ${status}`,
+      by: "Admin",
+      icon: "accept",
+    });
     await assignment.save();
 
     res.json({
@@ -56,7 +61,7 @@ exports.updateAssignmentStatus = async (req, res) => {
 exports.getAssignmentById = async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id).populate(
-      "student",
+      "customer.registeredUser",
       "name email",
     );
 

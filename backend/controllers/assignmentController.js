@@ -161,6 +161,13 @@ exports.createAssignment = async (req, res) => {
       printPreferences: parsedPrintPreferences,
       deliveryType,
       address: parsedAddress,
+      activityLog: [
+        {
+          action: "Order Created",
+          by: "Customer",
+          icon: "create",
+        },
+      ],
     });
 
     res.status(201).json({
