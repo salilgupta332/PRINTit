@@ -32,6 +32,9 @@ const adminAssignmentsRoutes = require("./routes/adminRoutes/adminAssignments");
 const adminDashboardRoutes = require("./routes/adminRoutes/adminDashboardRoutes");
 const aadhaarRoutes = require("./routes/userRoutes/aadhaarRoutes");
 const panRoutes = require("./routes/userRoutes/panRoutes");
+const locationRoutes = require("./routes/locationRoutes");
+
+app.use("/api/location", locationRoutes);
 app.use("/api/user", panRoutes);
 app.use("/api/user", aadhaarRoutes);
 app.use("/api/admin", adminDashboardRoutes);

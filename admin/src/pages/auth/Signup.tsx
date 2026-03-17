@@ -66,6 +66,10 @@ const AdminSignUp = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [showManual, setShowManual] = useState(false);
+  const [manualLat, setManualLat] = useState("");
+  const [manualLng, setManualLng] = useState("");
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -105,6 +109,8 @@ const AdminSignUp = () => {
       }
     });
   };
+ 
+
   const toggleDay = (day: string) => {
     setWorkingDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
@@ -283,7 +289,7 @@ const AdminSignUp = () => {
           </div>
 
           <form onSubmit={handleNext} className="space-y-4">
-            {/* STEP 0 */}
+            
             {step === 0 && (
               <>
                 <AuthInput
@@ -393,13 +399,26 @@ const AdminSignUp = () => {
             {/* STEP 2 */}
             {step === 2 && (
               <>
-                <button
-                  type="button"
-                  onClick={handleUseCurrentLocation}
-                  className="w-full mb-3 py-2 rounded-lg bg-primary text-white font-medium"
-                >
-                  📍 Use Current Location
-                </button>
+         <h3 className="text-sm font-medium text-muted-foreground mb-2">
+  Choose how you want to set your shop location
+</h3>
+                <div className="flex gap-3 mb-3">
+                  <button
+                    type="button"
+                    onClick={handleUseCurrentLocation}
+                    className="flex-1 py-2 rounded-lg bg-primary text-white font-medium"
+                  >
+                    📍 Use Current Location
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowManual(true)}
+                    className="flex-1 py-2 rounded-lg border border-primary text-primary font-medium"
+                  >
+                    📍 Enter Manually
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <AuthInput
                     label="Area"
@@ -454,6 +473,86 @@ const AdminSignUp = () => {
                   }}
                 />
               </>
+            )}
+
+            {showManual && (
+              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-xl w-[300px] space-y-3">
+                  <h2 className="text-lg font-semibold">Enter Coordinates</h2>
+
+                  <input
+                    type="text"
+                    placeholder="Latitude"
+                    value={manualLat}
+                    onChange={(e) => setManualLat(e.target.value)}
+                    className="w-full p-2 border rounded"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Longitude"
+                    value={manualLng}
+                    onChange={(e) => setManualLng(e.target.value)}
+                    className="w-full p-2 border rounded"
+                  />
+
+                  <div className="flex gap-2">
+                    <button
+                      className="flex-1 bg-primary text-white py-2 rounded"
+                      onClick={async () => {
+                        try {
+                          const lat = manualLat;
+                          const lng = manualLng;
+
+                          handleChange("lat", lat);
+                          handleChange("lng", lng);
+
+                          // 🔥 Reverse geocoding call
+                          const res = await fetch(
+                            `http://localhost:5000/api/location/reverse?lat=${lat}&lng=${lng}`,
+                          );
+
+                          const data = await res.json();
+
+                          const addr = data.address || {};
+
+                          handleChange(
+                            "area",
+                            addr.suburb ||
+                              addr.neighbourhood ||
+                              addr.village ||
+                              "",
+                          );
+
+                          handleChange(
+                            "city",
+                            addr.city || addr.town || addr.village || "",
+                          );
+
+                          handleChange("state", addr.state || "");
+
+                          handleChange("pincode", addr.postcode || "");
+
+                          handleChange("address", data.display_name || "");
+
+                          setShowManual(false);
+                        } catch (err) {
+                          console.error("Reverse error", err);
+                        }
+                      }}
+                    >
+                      Set Location
+                    </button>
+
+                    <button
+                      className="flex-1 border py-2 rounded"
+                      onClick={() => setShowManual(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
 
             <button type="submit" className="auth-btn-primary w-full">
