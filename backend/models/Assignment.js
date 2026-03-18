@@ -183,13 +183,36 @@ const assignmentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["requested", "in_progress", "printing", "dispatched", "delivered"],
+      enum: ["requested", "accepted", "in_progress", "printing", "dispatched", "delivered"],
       default: "requested",
     },
 
     price: {
       type: Number,
       default: 0,
+    },
+
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
+
+    broadcastTo: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+    ],
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [lng, lat]
+      },
     },
 
     activityLog: [

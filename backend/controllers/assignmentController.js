@@ -1,16 +1,13 @@
 const Assignment = require("../models/Assignment");
+const Admin = require("../models/Admin"); // 🔥 MISSING THA
 const { uploadToS3, getSignedFileUrl } = require("../utils/s3Upload");
 
 /**
- * @desc    Create new assignment (Shop creates for any customer)
- * @route   POST /api/assignments
- * @access  Public / Shopkeeper
+ * CREATE ASSIGNMENT
  */
 exports.createAssignment = async (req, res) => {
   try {
     console.log("REQ BODY:", req.body);
-    console.log("REQ FILES:", req.files);
-    console.log("CONTENT TYPE:", req.headers["content-type"]);
 
     /* =====================
        PARSE CUSTOMER
@@ -39,6 +36,8 @@ exports.createAssignment = async (req, res) => {
       printPreferences,
       deliveryType,
       address,
+      lat,
+      lng,
     } = req.body;
 
     /* =====================
@@ -55,56 +54,22 @@ exports.createAssignment = async (req, res) => {
         parsedPrintPreferences = JSON.parse(printPreferences);
       if (address) parsedAddress = JSON.parse(address);
     } catch (err) {
-      return res
-        .status(400)
-        .json({ message: "Invalid JSON format in request" });
+      return res.status(400).json({ message: "Invalid JSON format" });
     }
 
     /* =====================
-       REQUIRED VALIDATION
+       VALIDATION
     ====================== */
     if (!parsedCustomer?.name) {
-      return res.status(400).json({ message: "Customer name is required" });
+      return res.status(400).json({ message: "Customer name required" });
     }
 
     if (!assignmentType || !subjectName || !academicLevel || !deadline) {
-      return res.status(400).json({ message: "Required fields are missing" });
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     /* =====================
-       ASSIGNMENT TYPE VALIDATION
-    ====================== */
-    if (assignmentType === "from_scratch") {
-      if (!language) {
-        return res.status(400).json({
-          message: "Language is required for typing assignment",
-        });
-      }
-
-      if (
-        layoutProvided === "true" &&
-        !layoutPreference &&
-        !req.files?.layoutFiles
-      ) {
-        return res.status(400).json({
-          message: "Layout preference or layout file required",
-        });
-      }
-    }
-
-    if (
-      assignmentType === "student_upload" &&
-      (!req.files ||
-        !req.files.uploadedFiles ||
-        req.files.uploadedFiles.length === 0)
-    ) {
-      return res.status(400).json({
-        message: "Assignment file upload is required",
-      });
-    }
-
-    /* =====================
-       FILE UPLOAD (S3)
+       FILE UPLOAD
     ====================== */
     let uploadedFiles = [];
     let layoutFiles = [];
@@ -112,47 +77,51 @@ exports.createAssignment = async (req, res) => {
     if (req.files?.uploadedFiles) {
       uploadedFiles = await Promise.all(
         req.files.uploadedFiles.map(async (file) => {
-          const s3Key = await uploadToS3(file);
-          return { filename: file.originalname, key: s3Key };
-        }),
+          const key = await uploadToS3(file);
+          return { filename: file.originalname, key };
+        })
       );
     }
 
     if (req.files?.layoutFiles) {
       layoutFiles = await Promise.all(
         req.files.layoutFiles.map(async (file) => {
-          const s3Key = await uploadToS3(file);
-          return { filename: file.originalname, key: s3Key };
-        }),
+          const key = await uploadToS3(file);
+          return { filename: file.originalname, key };
+        })
       );
     }
 
     /* =====================
-       AUTO FILL FRONT PAGE NAME
+       ORDER NUMBER
     ====================== */
-    if (parsedFrontPageDetails && !parsedFrontPageDetails.studentName) {
-      parsedFrontPageDetails.studentName = parsedCustomer.name;
+    const last = await Assignment.findOne().sort({ createdAt: -1 });
+
+    let next = 1;
+    if (last?.orderNumber) {
+      const num = parseInt(last.orderNumber.split("-")[1]);
+      next = num + 1;
+    }
+
+    const orderNumber = `ORD-${String(next).padStart(4, "0")}`;
+
+    /* =====================
+       SAFE LOCATION HANDLE
+    ====================== */
+    let locationData = null;
+
+    if (lat && lng) {
+      locationData = {
+        type: "Point",
+        coordinates: [Number(lng), Number(lat)],
+      };
     }
 
     /* =====================
        CREATE ASSIGNMENT
-       
     ====================== */
-    const lastOrder = await Assignment.findOne().sort({ createdAt: -1 });
-
-    let nextNumber = 1;
-
-    if (lastOrder && lastOrder.orderNumber) {
-      const lastNum = parseInt(lastOrder.orderNumber.split("-")[1]);
-      nextNumber = lastNum + 1;
-    }
-
-    const orderNumber = `ORD-${String(nextNumber).padStart(4, "0")}`;
-
-    parsedCustomer.registeredUser = req.user.id;
     const assignment = await Assignment.create({
-        orderNumber,
-
+      orderNumber,
       customer: parsedCustomer,
 
       assignmentType,
@@ -174,29 +143,64 @@ exports.createAssignment = async (req, res) => {
       printPreferences: parsedPrintPreferences,
       deliveryType,
       address: parsedAddress,
-      activityLog: [
-        {
-          action: "Order Created",
-          by: "Customer",
-          icon: "create",
-        },
-      ],
+
+      location: locationData, // 🔥 SAFE
+
+      status: "requested",
     });
 
+    /* =====================
+       FIND NEARBY SHOPS
+    ====================== */
+    let nearbyShops = [];
+
+    if (lat && lng) {
+      nearbyShops = await Admin.find({
+        "location.geo": {
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: [Number(lng), Number(lat)],
+            },
+            $maxDistance: 10000, // 10km
+          },
+        },
+      });
+
+      console.log("📍 Nearby shops:", nearbyShops.length);
+
+      // SAVE BROADCAST
+      assignment.broadcastTo = nearbyShops.map((s) => s._id);
+      await assignment.save();
+
+      // SOCKET EMIT
+      const io = req.app.get("io");
+
+      nearbyShops.forEach((shop) => {
+        io.to(shop._id.toString()).emit("new-order", assignment);
+      });
+    }
+
+    /* =====================
+       RESPONSE
+    ====================== */
     res.status(201).json({
       message: "Assignment created successfully",
       assignment,
+      nearbyShops: nearbyShops.length,
     });
+
   } catch (error) {
     console.error("Create Assignment Error:", error);
-    res.status(500).json({ message: "Server error while creating assignment" });
+    res.status(500).json({
+      message: error.message || "Server error",
+    });
   }
 };
 
-/* =========================================================
-   GET SIGNED FILE URL
-========================================================= */
-
+/* =====================
+   GET FILE
+===================== */
 exports.getAssignmentFile = async (req, res) => {
   try {
     const { assignmentId, fileIndex } = req.params;
@@ -206,12 +210,14 @@ exports.getAssignmentFile = async (req, res) => {
       return res.status(404).json({ message: "Assignment not found" });
 
     const file = assignment.uploadedFiles[fileIndex];
-    if (!file) return res.status(404).json({ message: "File not found" });
+    if (!file)
+      return res.status(404).json({ message: "File not found" });
 
-    const signedUrl = await getSignedFileUrl(file.key);
-    res.json({ url: signedUrl });
+    const url = await getSignedFileUrl(file.key);
+
+    res.json({ url });
   } catch (err) {
-    console.error("Signed URL Error:", err);
-    res.status(500).json({ message: "Failed to generate file access" });
+    console.error("File Error:", err);
+    res.status(500).json({ message: "File access error" });
   }
 };

@@ -3,58 +3,72 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const path = require("path");
-// Load environment variables first
+const http = require("http");
+const { Server } = require("socket.io");
+
+// Load env variables
 dotenv.config();
 
-// Connect to database
+// Connect DB
 connectDB();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Create HTTP server
+const server = http.createServer(app);
 
-// ---------- BODY PARSERS AFTER ----------
+// Init Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+// Store io globally (so routes can use it)
+app.set("io", io);
+
+// Socket connection
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+// ---------------- MIDDLEWARE ----------------
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ---------- ROUTES THAT USE MULTER FIRST ----------
+// ---------------- ROUTES ----------------
+
+// Assignment Routes
 app.use("/api/assignments", require("./routes/assignmentRoutes"));
 app.use("/api/assignments", require("./routes/getMyAssignments"));
 
-// ---------- AUTH ROUTES ----------
+// Auth Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/auth", require("./routes/loginRoutes"));
 
-const adminAuthRoutes = require("./routes/adminRoutes/adminAuthRoutes");
-const adminSignupRoutes = require("./routes/adminRoutes/adminSignup");
-const adminAssignmentsRoutes = require("./routes/adminRoutes/adminAssignments");
-const adminDashboardRoutes = require("./routes/adminRoutes/adminDashboardRoutes");
-const aadhaarRoutes = require("./routes/userRoutes/aadhaarRoutes");
-const panRoutes = require("./routes/userRoutes/panRoutes");
-const locationRoutes = require("./routes/locationRoutes");
-
-app.use("/api/location", locationRoutes);
-app.use("/api/user", panRoutes);
-app.use("/api/user", aadhaarRoutes);
-app.use("/api/admin", adminDashboardRoutes);
+// Admin Routes
+app.use("/api/admin", require("./routes/adminRoutes/adminDashboardRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes/adminProtectedRoutes"));
-app.use(
-  "/api/admin",
-  express.json(),
-  require("./routes/adminRoutes/adminAuthRoutes"),
-);
-app.use(
-  "/api/admin",
-  express.json(),
-  require("./routes/adminRoutes/adminSignup"),
-);
-app.use(
-  "/api/admin",
-  express.json(),
-  require("./routes/adminRoutes/adminAssignments"),
-);
+app.use("/api/admin", require("./routes/adminRoutes/adminAuthRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes/adminSignup"));
+app.use("/api/admin", require("./routes/adminRoutes/adminAssignments"));
+
+// User Routes
+app.use("/api/user", require("./routes/userRoutes/panRoutes"));
+app.use("/api/user", require("./routes/userRoutes/aadhaarRoutes"));
+
+// Location Routes
+app.use("/api/location", require("./routes/locationRoutes"));
+
+// Static Uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Protected Test Route
 const authMiddleware = require("./middlewares/adminAuthMiddleware");
 
 app.get("/api/protected", authMiddleware, (req, res) => {
@@ -64,12 +78,14 @@ app.get("/api/protected", authMiddleware, (req, res) => {
   });
 });
 
-// Test Route
+// Root Route
 app.get("/", (req, res) => {
   res.send("PRINTit Backend Running 🚀");
 });
 
+// ---------------- SERVER START ----------------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

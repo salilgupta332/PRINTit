@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,6 +89,7 @@ export default function AssignmentForm() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(initialForm);
   const [customerName, setCustomerName] = useState("");
+  const [location, setLocation] = useState({ lat: null, lng: null });
 
   const update = (field: keyof FormData, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -124,9 +125,38 @@ export default function AssignmentForm() {
     if (step > 0) setStep(step - 1);
   };
 
+  useEffect(() => {
+  const getLocation = async () => {
+    try {
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        }
+      );
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      console.log("📍 Location:", lat, lng);
+
+      setLocation({ lat, lng });
+    } catch (err) {
+      console.log("❌ Location denied or error");
+    }
+  };
+
+  getLocation();
+}, []);
+  
+
   const handleSubmit = async () => {
     try {
       const fd = new FormData();
+if (location.lat && location.lng) {
+  fd.append("lat", location.lat.toString());
+  fd.append("lng", location.lng.toString());
+}
+      
 
       /* ================= BASIC ================= */
       fd.append(
@@ -202,6 +232,7 @@ export default function AssignmentForm() {
           landmark: form.landmark,
         }),
       );
+      console.log("📦 FormData:", [...fd.entries()]);
 
       /* ================= API CALL ================= */
       await createAssignment(fd);

@@ -1,6 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { io } from "socket.io-client";
 import { Search, Eye } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -15,12 +22,13 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { apiGet } from "@/api/client";
 
-
+import { apiFetch } from "@/api/client";
 const statusColors: Record<string, string> = {
   printing: "bg-blue-500/10 text-blue-600",
   requested: "bg-yellow-500/10 text-yellow-600",
   delivered: "bg-green-500/10 text-green-600",
   pending: "bg-yellow-500/10 text-yellow-600",
+   accepted: "bg-green-500/10 text-green-600",
 };
 
 interface OrdersTableProps {
@@ -29,7 +37,11 @@ interface OrdersTableProps {
   description: string;
 }
 
-const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => {
+const OrdersTable = ({
+  filterStatus,
+  title,
+  description,
+}: OrdersTableProps) => {
   const { token } = useAuth();
   const navigate = useNavigate();
 
@@ -37,6 +49,52 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+
+  const handleAccept = async (id) => {
+    try {
+      console.log("Accept clicked:", id);
+
+      const res = await apiFetch(`/admin/assignments/${id}/accept`, {
+        method: "PUT",
+      });
+
+      console.log("Accepted:", res);
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.mongoId === id
+            ? {
+                ...o,
+                status: "accepted",
+                assignedTo: true, // 👈 important
+              }
+            : o,
+        ),
+      );
+    } catch (err) {
+      console.error("Accept error:", err);
+    }
+  };
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    const shopId = JSON.parse(localStorage.getItem("admin"))?._id;
+
+    socketRef.current = io("http://localhost:5000");
+
+    socketRef.current.emit("join-shop", shopId);
+
+    // 🔥 LISTEN REMOVE EVENT
+    socketRef.current.on("order-taken", (orderId) => {
+      console.log("❌ Order taken by someone else:", orderId);
+
+      setOrders((prev) => prev.filter((o) => o.mongoId !== orderId));
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, []);
 
   // ================= FETCH ASSIGNMENTS =================
   useEffect(() => {
@@ -53,15 +111,19 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
 
         // ===== TRANSFORM TO UI FORMAT =====
         const mapped = assignments.map((a) => ({
-            id: a.orderNumber || a._id,
-  mongoId: a._id,
-          customer: a.customer?.name || a.frontPageDetails?.studentName || "Unknown Student",
-            service:
-    a.assignmentType === "from_scratch"
-      ? "Typing / Writing"
-      : a.assignmentType === "student_upload"
-      ? "Printing"
-      : "General Service",
+          id: a.orderNumber || a._id,
+          mongoId: a._id,
+          assignedTo: a.assignedTo || null,
+          customer:
+            a.customer?.name ||
+            a.frontPageDetails?.studentName ||
+            "Unknown Student",
+          service:
+            a.assignmentType === "from_scratch"
+              ? "Typing / Writing"
+              : a.assignmentType === "student_upload"
+                ? "Printing"
+                : "General Service",
           pages: a.totalPages || a.pages || 0,
           status: (a.status || "requested").toLowerCase(),
           date: a.deadline
@@ -120,7 +182,10 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
 
             <div className="flex gap-2">
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
                 <Input
                   placeholder="Search orders..."
                   value={search}
@@ -165,36 +230,67 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
 
               <tbody className="divide-y divide-border">
                 {filtered.map((order) => (
-                  <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="py-3 pr-4 font-mono text-xs font-medium text-primary">{order.id}</td>
+                  <tr
+                    key={order.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="py-3 pr-4 font-mono text-xs font-medium text-primary">
+                      {order.id}
+                    </td>
                     <td className="py-3 pr-4 font-medium">{order.customer}</td>
-                    <td className="py-3 pr-4 text-muted-foreground">{order.service}</td>
-                    <td className="py-3 pr-4 text-muted-foreground">{order.printType}</td>
+                    <td className="py-3 pr-4 text-muted-foreground">
+                      {order.service}
+                    </td>
+                    <td className="py-3 pr-4 text-muted-foreground">
+                      {order.printType}
+                    </td>
                     <td className="py-3 pr-4">{order.pages}</td>
                     <td className="py-3 pr-4 font-semibold">{order.amount}</td>
                     <td className="py-3 pr-4">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[order.status]}`}>
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[order.status]}`}
+                      >
                         {order.status}
                       </span>
                     </td>
-                    <td className="py-3 pr-4 text-xs text-muted-foreground">{order.date}</td>
+                    <td className="py-3 pr-4 text-xs text-muted-foreground">
+                      {order.date}
+                    </td>
                     <td className="py-3">
                       <Button
                         variant="outline"
                         size="sm"
                         className="gap-1 h-7"
-                       onClick={() => navigate(`/orders/${order.mongoId}`)}
+                        onClick={() => navigate(`/orders/${order.mongoId}`)}
                       >
                         <Eye size={12} />
                         View
                       </Button>
+                      {order.assignedTo ? (
+                        <Button
+                          disabled
+                          className="bg-gray-500 text-white cursor-not-allowed"
+                        >
+                          Accepted
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleAccept(order.mongoId)}
+                          className="bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          Accept
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
 
                 {!loading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="py-12 text-center text-muted-foreground">
+                    <td
+                      colSpan={9}
+                      className="py-12 text-center text-muted-foreground"
+                    >
                       No orders found
                     </td>
                   </tr>
@@ -208,7 +304,30 @@ const OrdersTable = ({ filterStatus, title, description }: OrdersTableProps) => 
   );
 };
 
-export const AllOrders = () => <OrdersTable title="All Orders" description="Manage and track all print orders" />;
-export const PendingOrders = () => <OrdersTable filterStatus="requested" title="Pending Orders" description="Orders waiting to be processed" />;
-export const PrintingOrders = () => <OrdersTable filterStatus="printing" title="Currently Printing" description="Orders currently being printed" />;
-export const CompletedOrders = () => <OrdersTable filterStatus="delivered" title="Completed Orders" description="Successfully fulfilled orders" />;
+export const AllOrders = () => (
+  <OrdersTable
+    title="All Orders"
+    description="Manage and track all print orders"
+  />
+);
+export const PendingOrders = () => (
+  <OrdersTable
+    filterStatus="requested"
+    title="Pending Orders"
+    description="Orders waiting to be processed"
+  />
+);
+export const PrintingOrders = () => (
+  <OrdersTable
+    filterStatus="printing"
+    title="Currently Printing"
+    description="Orders currently being printed"
+  />
+);
+export const CompletedOrders = () => (
+  <OrdersTable
+    filterStatus="delivered"
+    title="Completed Orders"
+    description="Successfully fulfilled orders"
+  />
+);
