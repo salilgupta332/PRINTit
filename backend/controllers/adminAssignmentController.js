@@ -165,11 +165,15 @@ exports.acceptAssignment = async (req, res) => {
     // 🔥 SOCKET
     const io = req.app.get("io");
 
-    if (assignment.broadcastTo && Array.isArray(assignment.broadcastTo)) {
-      assignment.broadcastTo.forEach((shopId) => {
-        io.to(shopId.toString()).emit("order-taken", assignment._id);
-      });
-    }
+assignment.broadcastTo.forEach((shopId) => {
+  // ❌ jisne accept kiya usko skip karo
+  if (shopId.toString() !== req.adminId.toString()) {
+    console.log("📡 Emitting to:", shopId.toString());
+
+    io.to(shopId.toString()).emit("order-taken", assignment._id);
+  }
+});
+io.emit("order-taken-global", assignment._id);
 
     res.json({
       message: "Order accepted",

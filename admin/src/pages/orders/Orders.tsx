@@ -28,7 +28,7 @@ const statusColors: Record<string, string> = {
   requested: "bg-yellow-500/10 text-yellow-600",
   delivered: "bg-green-500/10 text-green-600",
   pending: "bg-yellow-500/10 text-yellow-600",
-   accepted: "bg-green-500/10 text-green-600",
+  accepted: "bg-green-500/10 text-green-600",
 };
 
 interface OrdersTableProps {
@@ -66,7 +66,7 @@ const OrdersTable = ({
             ? {
                 ...o,
                 status: "accepted",
-                assignedTo: true, // 👈 important
+                assignedTo: id, // 👈 important
               }
             : o,
         ),
@@ -78,21 +78,119 @@ const OrdersTable = ({
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const shopId = JSON.parse(localStorage.getItem("admin"))?._id;
+    const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
+    console.log("ADMIN LS:", localStorage.getItem("admin"));
 
-    socketRef.current = io("http://localhost:5000");
+    const shopId = adminData?._id || adminData?.id;
 
-    socketRef.current.emit("join-shop", shopId);
+    console.log("🔥 Joining with shopId:", shopId);
 
-    // 🔥 LISTEN REMOVE EVENT
-    socketRef.current.on("order-taken", (orderId) => {
-      console.log("❌ Order taken by someone else:", orderId);
+    const socket = io("http://localhost:5000", {
+      transports: ["websocket"],
+      reconnection: true,
+    });
 
-      setOrders((prev) => prev.filter((o) => o.mongoId !== orderId));
+    socketRef.current = socket;
+
+    // 🔥 JOIN ROOM
+    socket.on("connect", () => {
+      console.log("✅ Socket connected:", socket.id);
+
+      if (shopId) {
+        socket.emit("join", shopId);
+        console.log("🚀 Joined room instantly:", shopId);
+      }
+    });
+
+    // 🔥 LISTEN EVENT
+    socket.on("order-taken", (orderId) => {
+      console.log("❌ Order removed realtime:", orderId);
+
+      setOrders((prev) =>
+        prev.filter((o) => o.mongoId.toString() !== orderId.toString()),
+      );
+    });
+
+    socket.on("order-taken-global", (orderId) => {
+      console.log("🌍 fallback remove:", orderId);
+
+      setOrders((prev) =>
+        prev.filter((o) => o.mongoId.toString() !== orderId.toString()),
+      );
+    });
+
+    socket.on("new-order", (assignment) => {
+      console.log("🆕 New order realtime:", assignment);
+
+      const mapped = {
+        id: assignment.orderNumber || assignment._id,
+        mongoId: assignment._id,
+        assignedTo: assignment.assignedTo || null,
+        customer:
+          assignment.customer?.name ||
+          assignment.frontPageDetails?.studentName ||
+          "Unknown Student",
+        service:
+          assignment.assignmentType === "from_scratch"
+            ? "Typing / Writing"
+            : assignment.assignmentType === "student_upload"
+              ? "Printing"
+              : "General Service",
+        pages: assignment.totalPages || 0,
+        status: (assignment.status || "requested").toLowerCase(),
+        date: assignment.deadline
+          ? new Date(assignment.deadline).toLocaleDateString("en-GB")
+          : "No deadline",
+        amount: `₹${(assignment.totalPages || 0) * 2}`,
+        printType:
+          assignment.printPreferences?.printType?.replace("_", " ") ||
+          "Standard",
+      };
+
+      setOrders((prev) => {
+        const exists = prev.some((o) => o.mongoId === assignment._id);
+        if (exists) return prev;
+        return [mapped, ...prev];
+      });
+    });
+
+    socket.on("new-order-global", (assignment) => {
+      console.log("🌍 fallback order:", assignment);
+
+      const mapped = {
+        id: assignment.orderNumber || assignment._id,
+        mongoId: assignment._id,
+        assignedTo: assignment.assignedTo || null,
+        customer:
+          assignment.customer?.name ||
+          assignment.frontPageDetails?.studentName ||
+          "Unknown Student",
+        service:
+          assignment.assignmentType === "from_scratch"
+            ? "Typing / Writing"
+            : assignment.assignmentType === "student_upload"
+              ? "Printing"
+              : "General Service",
+        pages: assignment.totalPages || 0,
+        status: (assignment.status || "requested").toLowerCase(),
+        date: assignment.deadline
+          ? new Date(assignment.deadline).toLocaleDateString("en-GB")
+          : "No deadline",
+        amount: `₹${(assignment.totalPages || 0) * 2}`,
+        printType:
+          assignment.printPreferences?.printType?.replace("_", " ") ||
+          "Standard",
+      };
+
+      setOrders((prev) => {
+        const exists = prev.some((o) => o.mongoId === assignment._id);
+        if (exists) return prev;
+        return [mapped, ...prev];
+      });
     });
 
     return () => {
-      socketRef.current.disconnect();
+      socket.disconnect();
     };
   }, []);
 
@@ -266,7 +364,7 @@ const OrdersTable = ({
                         <Eye size={12} />
                         View
                       </Button>
-                      {order.assignedTo ? (
+                      {order.assignedTo && order.status === "accepted" ? (
                         <Button
                           disabled
                           className="bg-gray-500 text-white cursor-not-allowed"

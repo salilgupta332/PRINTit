@@ -179,6 +179,7 @@ exports.createAssignment = async (req, res) => {
       nearbyShops.forEach((shop) => {
         io.to(shop._id.toString()).emit("new-order", assignment);
       });
+      io.emit("new-order-global", assignment);
     }
 
     /* =====================

@@ -31,6 +31,17 @@ app.set("io", io);
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
+  socket.on("join", (adminId) => {
+    if (!adminId) {
+      console.log("❌ Invalid adminId for join");
+      return;
+    }
+
+    socket.join(adminId.toString());
+
+    console.log("🔗 Admin joined room:", adminId.toString());
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
