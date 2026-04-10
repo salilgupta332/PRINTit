@@ -79,7 +79,7 @@ exports.createAssignment = async (req, res) => {
         req.files.uploadedFiles.map(async (file) => {
           const key = await uploadToS3(file);
           return { filename: file.originalname, key };
-        })
+        }),
       );
     }
 
@@ -88,7 +88,7 @@ exports.createAssignment = async (req, res) => {
         req.files.layoutFiles.map(async (file) => {
           const key = await uploadToS3(file);
           return { filename: file.originalname, key };
-        })
+        }),
       );
     }
 
@@ -175,11 +175,11 @@ exports.createAssignment = async (req, res) => {
 
       // SOCKET EMIT
       const io = req.app.get("io");
+nearbyShops.forEach((shop) => {
+  console.log("📡 Emitting NEW ORDER to:", shop._id.toString());
 
-      nearbyShops.forEach((shop) => {
-        io.to(shop._id.toString()).emit("new-order", assignment);
-      });
-      io.emit("new-order-global", assignment);
+  io.to(shop._id.toString()).emit("new-order", assignment);
+}); 
     }
 
     /* =====================
@@ -190,7 +190,6 @@ exports.createAssignment = async (req, res) => {
       assignment,
       nearbyShops: nearbyShops.length,
     });
-
   } catch (error) {
     console.error("Create Assignment Error:", error);
     res.status(500).json({
@@ -211,8 +210,7 @@ exports.getAssignmentFile = async (req, res) => {
       return res.status(404).json({ message: "Assignment not found" });
 
     const file = assignment.uploadedFiles[fileIndex];
-    if (!file)
-      return res.status(404).json({ message: "File not found" });
+    if (!file) return res.status(404).json({ message: "File not found" });
 
     const url = await getSignedFileUrl(file.key);
 

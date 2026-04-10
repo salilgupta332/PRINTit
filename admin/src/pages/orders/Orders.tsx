@@ -21,6 +21,7 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 import { apiGet } from "@/api/client";
+import socket from "@/lib/socket";
 
 import { apiFetch } from "@/api/client";
 const statusColors: Record<string, string> = {
@@ -60,13 +61,16 @@ const OrdersTable = ({
 
       console.log("Accepted:", res);
 
+      const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
+      const myId = adminData?._id;
+
       setOrders((prev) =>
         prev.map((o) =>
           o.mongoId === id
             ? {
                 ...o,
                 status: "accepted",
-                assignedTo: id, // 👈 important
+                assignedTo: myId, // ✅ IMPORTANT FIX
               }
             : o,
         ),
@@ -85,10 +89,7 @@ const OrdersTable = ({
 
     console.log("🔥 Joining with shopId:", shopId);
 
-    const socket = io("http://localhost:5000", {
-      transports: ["websocket"],
-      reconnection: true,
-    });
+
 
     socketRef.current = socket;
 
@@ -103,21 +104,46 @@ const OrdersTable = ({
     });
 
     // 🔥 LISTEN EVENT
-    socket.on("order-taken", (orderId) => {
-      console.log("❌ Order removed realtime:", orderId);
+socket.on("order-taken", ({ orderId, assignedTo }) => {
+  const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
+  const myId = adminData?._id;
 
-      setOrders((prev) =>
-        prev.filter((o) => o.mongoId.toString() !== orderId.toString()),
-      );
-    });
+  setOrders((prev) =>
+    prev
+      .map((o) => {
+        if (o.mongoId.toString() === orderId.toString()) {
+          return {
+            ...o,
+            assignedTo,
+            status: "accepted",
+          };
+        }
+        return o;
+      })
+      .filter((o) => {
+        // 🔥 agar mera nahi hai → hata do
+        if (o.mongoId.toString() === orderId.toString()) {
+          return assignedTo === myId;
+        }
+        return true;
+      }),
+  );
+});
 
-    socket.on("order-taken-global", (orderId) => {
-      console.log("🌍 fallback remove:", orderId);
+    // socket.on("order-taken-global", (orderId) => {
+    //   const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
+    //   const myId = adminData?._id;
 
-      setOrders((prev) =>
-        prev.filter((o) => o.mongoId.toString() !== orderId.toString()),
-      );
-    });
+    //   setOrders((prev) =>
+    //     prev.filter((o) => {
+    //       if (o.mongoId.toString() === orderId.toString()) {
+    //         // 🔥 agar ye mera accepted order hai → mat hatao
+    //         return o.assignedTo === true;
+    //       }
+    //       return true;
+    //     }),
+    //   );
+    // });
 
     socket.on("new-order", (assignment) => {
       console.log("🆕 New order realtime:", assignment);
@@ -154,44 +180,7 @@ const OrdersTable = ({
       });
     });
 
-    socket.on("new-order-global", (assignment) => {
-      console.log("🌍 fallback order:", assignment);
-
-      const mapped = {
-        id: assignment.orderNumber || assignment._id,
-        mongoId: assignment._id,
-        assignedTo: assignment.assignedTo || null,
-        customer:
-          assignment.customer?.name ||
-          assignment.frontPageDetails?.studentName ||
-          "Unknown Student",
-        service:
-          assignment.assignmentType === "from_scratch"
-            ? "Typing / Writing"
-            : assignment.assignmentType === "student_upload"
-              ? "Printing"
-              : "General Service",
-        pages: assignment.totalPages || 0,
-        status: (assignment.status || "requested").toLowerCase(),
-        date: assignment.deadline
-          ? new Date(assignment.deadline).toLocaleDateString("en-GB")
-          : "No deadline",
-        amount: `₹${(assignment.totalPages || 0) * 2}`,
-        printType:
-          assignment.printPreferences?.printType?.replace("_", " ") ||
-          "Standard",
-      };
-
-      setOrders((prev) => {
-        const exists = prev.some((o) => o.mongoId === assignment._id);
-        if (exists) return prev;
-        return [mapped, ...prev];
-      });
-    });
-
-    return () => {
-      socket.disconnect();
-    };
+   
   }, []);
 
   // ================= FETCH ASSIGNMENTS =================

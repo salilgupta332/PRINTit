@@ -170,10 +170,13 @@ assignment.broadcastTo.forEach((shopId) => {
   if (shopId.toString() !== req.adminId.toString()) {
     console.log("📡 Emitting to:", shopId.toString());
 
-    io.to(shopId.toString()).emit("order-taken", assignment._id);
+    io.to(shopId.toString()).emit("order-taken", {
+  orderId: assignment._id,
+  assignedTo: assignment.assignedTo,
+});
   }
 });
-io.emit("order-taken-global", assignment._id);
+
 
     res.json({
       message: "Order accepted",
