@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
-import { io } from "socket.io-client";
+import React, { useEffect, useState } from "react";
 import { Search, Eye } from "lucide-react";
 import {
   Card,
@@ -20,10 +19,9 @@ import {
 } from "@/components/ui/select";
 
 import { useAuth } from "@/context/AuthContext";
-import { apiGet } from "@/api/client";
+import { apiFetch, apiGet } from "@/api/client";
 import socket from "@/lib/socket";
 
-import { apiFetch } from "@/api/client";
 const statusColors: Record<string, string> = {
   printing: "bg-blue-500/10 text-blue-600",
   requested: "bg-yellow-500/10 text-yellow-600",
@@ -38,6 +36,34 @@ interface OrdersTableProps {
   description: string;
 }
 
+const mapAssignmentToOrder = (assignment: any) => ({
+  id: assignment.orderNumber || assignment._id,
+  mongoId: assignment._id,
+  assignedTo: assignment.assignedTo || null,
+  customer:
+    assignment.customer?.name ||
+    assignment.frontPageDetails?.studentName ||
+    "Unknown Student",
+  service:
+    assignment.assignmentType === "from_scratch"
+      ? "Typing / Writing"
+      : assignment.assignmentType === "student_upload"
+        ? "Printing"
+        : "General Service",
+  pages: assignment.totalPages || assignment.pages || 0,
+  status: (assignment.status || "requested").toLowerCase(),
+  date: assignment.deadline
+    ? new Date(assignment.deadline).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "No deadline",
+  amount: `Rs ${(assignment.totalPages || assignment.pages || 0) * 2}`,
+  printType:
+    assignment.printPreferences?.printType?.replace("_", " ") || "Standard",
+});
+
 const OrdersTable = ({
   filterStatus,
   title,
@@ -50,19 +76,13 @@ const OrdersTable = ({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [adminId, setAdminId] = useState<string | null>(null);
 
   const handleAccept = async (id) => {
     try {
-      console.log("Accept clicked:", id);
-
-      const res = await apiFetch(`/admin/assignments/${id}/accept`, {
+      await apiFetch(`/admin/assignments/${id}/accept`, {
         method: "PUT",
       });
-
-      console.log("Accepted:", res);
-
-      const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
-      const myId = adminData?._id;
 
       setOrders((prev) =>
         prev.map((o) =>
@@ -70,7 +90,7 @@ const OrdersTable = ({
             ? {
                 ...o,
                 status: "accepted",
-                assignedTo: myId, // ✅ IMPORTANT FIX
+                assignedTo: adminId,
               }
             : o,
         ),
@@ -79,111 +99,96 @@ const OrdersTable = ({
       console.error("Accept error:", err);
     }
   };
-  const socketRef = useRef(null);
 
   useEffect(() => {
     const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
-    console.log("ADMIN LS:", localStorage.getItem("admin"));
+    const savedAdminId = adminData?._id || adminData?.id || null;
 
-    const shopId = adminData?._id || adminData?.id;
+    if (savedAdminId) {
+      setAdminId(savedAdminId);
+      return;
+    }
 
-    console.log("🔥 Joining with shopId:", shopId);
+    if (!token) return;
 
+    let cancelled = false;
 
+    const resolveAdminId = async () => {
+      try {
+        const data = await apiGet("/admin/me", token);
+        const resolvedAdminId = data?.adminId || null;
 
-    socketRef.current = socket;
+        if (!resolvedAdminId || cancelled) return;
 
-    // 🔥 JOIN ROOM
-    socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket.id);
-
-      if (shopId) {
-        socket.emit("join", shopId);
-        console.log("🚀 Joined room instantly:", shopId);
+        setAdminId(resolvedAdminId);
+        localStorage.setItem("admin", JSON.stringify({ id: resolvedAdminId }));
+      } catch (err) {
+        console.error("Failed to resolve admin id for realtime orders", err);
       }
-    });
+    };
 
-    // 🔥 LISTEN EVENT
-socket.on("order-taken", ({ orderId, assignedTo }) => {
-  const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
-  const myId = adminData?._id;
+    resolveAdminId();
 
-  setOrders((prev) =>
-    prev
-      .map((o) => {
-        if (o.mongoId.toString() === orderId.toString()) {
-          return {
-            ...o,
-            assignedTo,
-            status: "accepted",
-          };
-        }
-        return o;
-      })
-      .filter((o) => {
-        // 🔥 agar mera nahi hai → hata do
-        if (o.mongoId.toString() === orderId.toString()) {
-          return assignedTo === myId;
-        }
-        return true;
-      }),
-  );
-});
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
-    // socket.on("order-taken-global", (orderId) => {
-    //   const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
-    //   const myId = adminData?._id;
+  useEffect(() => {
+    if (!adminId) return;
 
-    //   setOrders((prev) =>
-    //     prev.filter((o) => {
-    //       if (o.mongoId.toString() === orderId.toString()) {
-    //         // 🔥 agar ye mera accepted order hai → mat hatao
-    //         return o.assignedTo === true;
-    //       }
-    //       return true;
-    //     }),
-    //   );
-    // });
+    const joinRoom = () => {
+      socket.emit("join", adminId);
+      console.log("Joined admin room:", adminId);
+    };
 
-    socket.on("new-order", (assignment) => {
-      console.log("🆕 New order realtime:", assignment);
+    const handleOrderTaken = ({ orderId, assignedTo }) => {
+      setOrders((prev) =>
+        prev
+          .map((o) => {
+            if (o.mongoId.toString() === orderId.toString()) {
+              return {
+                ...o,
+                assignedTo,
+                status: "accepted",
+              };
+            }
+            return o;
+          })
+          .filter((o) => {
+            if (o.mongoId.toString() === orderId.toString()) {
+              return assignedTo === adminId;
+            }
+            return true;
+          }),
+      );
+    };
 
-      const mapped = {
-        id: assignment.orderNumber || assignment._id,
-        mongoId: assignment._id,
-        assignedTo: assignment.assignedTo || null,
-        customer:
-          assignment.customer?.name ||
-          assignment.frontPageDetails?.studentName ||
-          "Unknown Student",
-        service:
-          assignment.assignmentType === "from_scratch"
-            ? "Typing / Writing"
-            : assignment.assignmentType === "student_upload"
-              ? "Printing"
-              : "General Service",
-        pages: assignment.totalPages || 0,
-        status: (assignment.status || "requested").toLowerCase(),
-        date: assignment.deadline
-          ? new Date(assignment.deadline).toLocaleDateString("en-GB")
-          : "No deadline",
-        amount: `₹${(assignment.totalPages || 0) * 2}`,
-        printType:
-          assignment.printPreferences?.printType?.replace("_", " ") ||
-          "Standard",
-      };
+    const handleNewOrder = (assignment) => {
+      const mapped = mapAssignmentToOrder(assignment);
 
       setOrders((prev) => {
-        const exists = prev.some((o) => o.mongoId === assignment._id);
+        const exists = prev.some(
+          (o) => o.mongoId?.toString() === assignment._id?.toString(),
+        );
+
         if (exists) return prev;
         return [mapped, ...prev];
       });
-    });
+    };
 
-   
-  }, []);
+    joinRoom();
+    socket.on("connect", joinRoom);
+    socket.on("order-taken", handleOrderTaken);
+    socket.on("new-order", handleNewOrder);
 
-  // ================= FETCH ASSIGNMENTS =================
+    return () => {
+      socket.off("connect", joinRoom);
+      socket.off("order-taken", handleOrderTaken);
+      socket.off("new-order", handleNewOrder);
+    };
+  }, [adminId]);
+
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
@@ -196,36 +201,7 @@ socket.on("order-taken", ({ orderId, assignedTo }) => {
         else if (data?.assignments) assignments = data.assignments;
         else if (data?.data) assignments = data.data;
 
-        // ===== TRANSFORM TO UI FORMAT =====
-        const mapped = assignments.map((a) => ({
-          id: a.orderNumber || a._id,
-          mongoId: a._id,
-          assignedTo: a.assignedTo || null,
-          customer:
-            a.customer?.name ||
-            a.frontPageDetails?.studentName ||
-            "Unknown Student",
-          service:
-            a.assignmentType === "from_scratch"
-              ? "Typing / Writing"
-              : a.assignmentType === "student_upload"
-                ? "Printing"
-                : "General Service",
-          pages: a.totalPages || a.pages || 0,
-          status: (a.status || "requested").toLowerCase(),
-          date: a.deadline
-            ? new Date(a.deadline).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })
-            : "No deadline",
-          amount: `₹${(a.totalPages || 0) * 2}`, // simple calc for now
-          printType:
-            a.printPreferences?.printType?.replace("_", " ") || "Standard",
-        }));
-
-        setOrders(mapped);
+        setOrders(assignments.map(mapAssignmentToOrder));
       } catch (err) {
         console.error("Failed to fetch assignments", err);
       } finally {
@@ -236,7 +212,6 @@ socket.on("order-taken", ({ orderId, assignedTo }) => {
     if (token) fetchAssignments();
   }, [token]);
 
-  // ================= FILTERING =================
   const filtered = orders.filter((o) => {
     const matchesSearch =
       o.customer.toLowerCase().includes(search.toLowerCase()) ||

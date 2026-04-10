@@ -1,6 +1,7 @@
 const Assignment = require("../models/Assignment");
 const Admin = require("../models/Admin"); // 🔥 MISSING THA
 const { uploadToS3, getSignedFileUrl } = require("../utils/s3Upload");
+const SHOP_BROADCAST_RADIUS_METERS = 5000;
 
 /**
  * CREATE ASSIGNMENT
@@ -162,7 +163,7 @@ exports.createAssignment = async (req, res) => {
               type: "Point",
               coordinates: [Number(lng), Number(lat)],
             },
-            $maxDistance: 10000, // 10km
+            $maxDistance: SHOP_BROADCAST_RADIUS_METERS, // 5km
           },
         },
       });
@@ -175,11 +176,10 @@ exports.createAssignment = async (req, res) => {
 
       // SOCKET EMIT
       const io = req.app.get("io");
-nearbyShops.forEach((shop) => {
-  console.log("📡 Emitting NEW ORDER to:", shop._id.toString());
-
-  io.to(shop._id.toString()).emit("new-order", assignment);
-}); 
+      nearbyShops.forEach((shop) => {
+        console.log("📡 Emitting NEW ORDER to:", shop._id.toString());
+        io.to(shop._id.toString()).emit("new-order", assignment);
+      });
     }
 
     /* =====================
