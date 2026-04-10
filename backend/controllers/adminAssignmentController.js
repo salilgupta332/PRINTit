@@ -1,5 +1,6 @@
 const Assignment = require("../models/Assignment");
 const PANOrder = require("../models/PANOrder");
+const AadhaarOrder = require("../models/AadhaarOrder");
 const { getSignedFileUrl } = require("../utils/s3Upload");
 const mongoose = require("mongoose");
 const Admin = require("../models/Admin");
@@ -32,6 +33,19 @@ const getNextPanOrderNumber = async () => {
   return `PAN-${String(next).padStart(4, "0")}`;
 };
 
+const getNextAadhaarOrderNumber = async () => {
+  const last = await AadhaarOrder.findOne({ orderNumber: { $exists: true, $ne: null } })
+    .sort({ createdAt: -1 });
+
+  let next = 1;
+  if (last?.orderNumber) {
+    const num = parseInt(last.orderNumber.split("-")[1], 10);
+    if (!Number.isNaN(num)) next = num + 1;
+  }
+
+  return `AAD-${String(next).padStart(4, "0")}`;
+};
+
 const normalizePanStatus = (status) => {
   if (status === "pending") return "requested";
   if (status === "processing") return "in_progress";
@@ -41,6 +55,24 @@ const normalizePanStatus = (status) => {
 };
 
 const denormalizePanStatus = (status) => {
+  if (status === "requested") return "requested";
+  if (status === "accepted") return "accepted";
+  if (status === "in_progress") return "in_progress";
+  if (status === "printing") return "printing";
+  if (status === "dispatched") return "dispatched";
+  if (status === "delivered") return "delivered";
+  return status;
+};
+
+const normalizeAadhaarStatus = (status) => {
+  if (status === "pending") return "requested";
+  if (status === "processing") return "in_progress";
+  if (status === "ready") return "printing";
+  if (status === "completed") return "delivered";
+  return status || "requested";
+};
+
+const denormalizeAadhaarStatus = (status) => {
   if (status === "requested") return "requested";
   if (status === "accepted") return "accepted";
   if (status === "in_progress") return "in_progress";
@@ -111,6 +143,67 @@ const ensurePanOrderMetadata = async (panOrder) => {
   return panOrder;
 };
 
+const ensureAadhaarOrderMetadata = async (aadhaarOrder) => {
+  let changed = false;
+
+  if (!aadhaarOrder.orderNumber) {
+    aadhaarOrder.orderNumber = await getNextAadhaarOrderNumber();
+    changed = true;
+  }
+
+  const coordinates = aadhaarOrder.location?.coordinates;
+  if (Array.isArray(coordinates) && coordinates.length === 2) {
+    const nearbyAdmins = await Admin.find({
+      "location.geo": {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates,
+          },
+          $maxDistance: SHOP_BROADCAST_RADIUS_METERS,
+        },
+      },
+    }, "_id");
+
+    const nextBroadcastTo = nearbyAdmins.map((admin) => admin._id.toString()).sort();
+    const currentBroadcastTo = (aadhaarOrder.broadcastTo || [])
+      .map((adminId) => adminId.toString())
+      .sort();
+
+    if (JSON.stringify(currentBroadcastTo) !== JSON.stringify(nextBroadcastTo)) {
+      aadhaarOrder.broadcastTo = nearbyAdmins.map((admin) => admin._id);
+      changed = true;
+    }
+  } else if ((aadhaarOrder.broadcastTo || []).length > 0 && !aadhaarOrder.assignedTo) {
+    aadhaarOrder.broadcastTo = [];
+    changed = true;
+  }
+
+  if (!aadhaarOrder.activityLog || aadhaarOrder.activityLog.length === 0) {
+    aadhaarOrder.activityLog = [
+      {
+        action: "Order created",
+        by: "Customer",
+        icon: "create",
+        createdAt: aadhaarOrder.createdAt,
+      },
+    ];
+    changed = true;
+  }
+
+  const normalizedStatus = normalizeAadhaarStatus(aadhaarOrder.status);
+  if (normalizedStatus !== aadhaarOrder.status) {
+    aadhaarOrder.status = normalizedStatus;
+    changed = true;
+  }
+
+  if (changed) {
+    await aadhaarOrder.save();
+  }
+
+  return aadhaarOrder;
+};
+
 const mapPanOrderToAssignmentShape = (panOrder) => ({
   _id: panOrder._id,
   orderNumber: panOrder.orderNumber || panOrder._id.toString(),
@@ -163,6 +256,56 @@ const mapPanOrderToAssignmentShape = (panOrder) => ({
   sourceType: "pan_order",
 });
 
+const mapAadhaarOrderToAssignmentShape = (aadhaarOrder) => ({
+  _id: aadhaarOrder._id,
+  orderNumber: aadhaarOrder.orderNumber || aadhaarOrder._id.toString(),
+  customer: {
+    name: aadhaarOrder.fullName,
+    phone: aadhaarOrder.mobile,
+    email: aadhaarOrder.email,
+  },
+  assignmentType: "student_upload",
+  subjectName: "Official Document Printing",
+  assignmentTitle: "Aadhaar Card Print",
+  academicLevel: "college",
+  deadline: aadhaarOrder.createdAt,
+  language: "english",
+  uploadedFiles: [
+    {
+      filename: "Aadhaar Card File",
+      key: aadhaarOrder.fileKey,
+    },
+  ],
+  assignmentDescription: `Aadhaar print order. Aadhaar number: ${aadhaarOrder.aadhaarNumber || "-"}`,
+  printPreferences: {
+    printType: aadhaarOrder.printType === "pvc" ? "color" : "black_white",
+    paperSize: "A4",
+    paperQuality: "normal",
+    bindingRequired: false,
+    copies: aadhaarOrder.copies || 1,
+  },
+  deliveryType: aadhaarOrder.deliveryType === "delivery" ? "home_delivery" : "pickup",
+  address: {
+    recipientName: aadhaarOrder.address?.recipientName || aadhaarOrder.fullName,
+    phoneNumber: aadhaarOrder.address?.phone || aadhaarOrder.mobile,
+    addressLine1: aadhaarOrder.address?.addressLine1 || aadhaarOrder.address?.houseNo || "",
+    addressLine2: aadhaarOrder.address?.addressLine2 || "",
+    city: aadhaarOrder.address?.city || "",
+    state: aadhaarOrder.address?.state || "",
+    pincode: aadhaarOrder.address?.pincode || "",
+    landmark: aadhaarOrder.address?.landmark || "",
+  },
+  price: 0,
+  totalPages: aadhaarOrder.copies || 1,
+  status: normalizeAadhaarStatus(aadhaarOrder.status),
+  assignedTo: aadhaarOrder.assignedTo || null,
+  broadcastTo: aadhaarOrder.broadcastTo || [],
+  activityLog: aadhaarOrder.activityLog || [],
+  createdAt: aadhaarOrder.createdAt,
+  updatedAt: aadhaarOrder.updatedAt,
+  sourceType: "aadhaar_order",
+});
+
 /**
  * GET /api/admin/assignments
  */
@@ -177,8 +320,20 @@ exports.getAllAssignments = async (req, res) => {
       ],
     }).sort({ createdAt: -1 });
 
+    const aadhaarOrders = await AadhaarOrder.find({
+      $or: [
+        { broadcastTo: { $exists: false } },
+        { broadcastTo: { $size: 0 } },
+        buildVisibleOrderFilter(adminObjectId),
+      ],
+    }).sort({ createdAt: -1 });
+
     for (const panOrder of panOrders) {
       await ensurePanOrderMetadata(panOrder);
+    }
+
+    for (const aadhaarOrder of aadhaarOrders) {
+      await ensureAadhaarOrderMetadata(aadhaarOrder);
     }
 
     const assignments = await Assignment.find(
@@ -189,9 +344,14 @@ exports.getAllAssignments = async (req, res) => {
       buildVisibleOrderFilter(adminObjectId),
     ).sort({ createdAt: -1 }).lean();
 
+    const visibleAadhaarOrders = await AadhaarOrder.find(
+      buildVisibleOrderFilter(adminObjectId),
+    ).sort({ createdAt: -1 }).lean();
+
     const combinedOrders = [
       ...assignments,
       ...visiblePanOrders.map(mapPanOrderToAssignmentShape),
+      ...visibleAadhaarOrders.map(mapAadhaarOrderToAssignmentShape),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.json(combinedOrders);
@@ -223,10 +383,16 @@ exports.updateAssignmentStatus = async (req, res) => {
 
     let assignment = await Assignment.findById(id);
     let isPanOrder = false;
+    let isAadhaarOrder = false;
 
     if (!assignment) {
       assignment = await PANOrder.findById(id);
       isPanOrder = Boolean(assignment);
+    }
+
+    if (!assignment) {
+      assignment = await AadhaarOrder.findById(id);
+      isAadhaarOrder = Boolean(assignment);
     }
 
     if (!assignment) {
@@ -248,7 +414,13 @@ exports.updateAssignmentStatus = async (req, res) => {
       delivered: 5,
     };
 
-    const currentStatusRank = statusOrder[normalizePanStatus(assignment.status)];
+    const normalizedCurrentStatus = isPanOrder
+      ? normalizePanStatus(assignment.status)
+      : isAadhaarOrder
+        ? normalizeAadhaarStatus(assignment.status)
+        : assignment.status;
+
+    const currentStatusRank = statusOrder[normalizedCurrentStatus];
     const nextStatusRank = statusOrder[status];
 
     if (nextStatusRank === undefined || currentStatusRank === undefined) {
@@ -261,7 +433,11 @@ exports.updateAssignmentStatus = async (req, res) => {
       });
     }
 
-    assignment.status = isPanOrder ? denormalizePanStatus(status) : status;
+    assignment.status = isPanOrder
+      ? denormalizePanStatus(status)
+      : isAadhaarOrder
+        ? denormalizeAadhaarStatus(status)
+        : status;
 
     const iconMap = {
       requested: "create",
@@ -282,7 +458,11 @@ exports.updateAssignmentStatus = async (req, res) => {
     res.json({
       success: true,
       message: "Assignment status updated successfully",
-      assignment: isPanOrder ? mapPanOrderToAssignmentShape(assignment.toObject()) : assignment,
+      assignment: isPanOrder
+        ? mapPanOrderToAssignmentShape(assignment.toObject())
+        : isAadhaarOrder
+          ? mapAadhaarOrderToAssignmentShape(assignment.toObject())
+          : assignment,
     });
   } catch (error) {
     console.error("Update status error:", error);
@@ -297,10 +477,16 @@ exports.updateAssignmentNote = async (req, res) => {
 
     let assignment = await Assignment.findById(id);
     let isPanOrder = false;
+    let isAadhaarOrder = false;
 
     if (!assignment) {
       assignment = await PANOrder.findById(id);
       isPanOrder = Boolean(assignment);
+    }
+
+    if (!assignment) {
+      assignment = await AadhaarOrder.findById(id);
+      isAadhaarOrder = Boolean(assignment);
     }
 
     if (!assignment) {
@@ -325,7 +511,11 @@ exports.updateAssignmentNote = async (req, res) => {
     res.json({
       success: true,
       message: "Assignment note updated successfully",
-      assignment: isPanOrder ? mapPanOrderToAssignmentShape(assignment.toObject()) : assignment,
+      assignment: isPanOrder
+        ? mapPanOrderToAssignmentShape(assignment.toObject())
+        : isAadhaarOrder
+          ? mapAadhaarOrderToAssignmentShape(assignment.toObject())
+          : assignment,
     });
   } catch (error) {
     console.error("Update note error:", error);
@@ -342,13 +532,19 @@ exports.getAssignmentById = async (req, res) => {
 
     if (!assignment) {
       const panOrder = await PANOrder.findById(req.params.id);
-      if (!panOrder) {
+      if (panOrder) {
+        await ensurePanOrderMetadata(panOrder);
+        return res.json(mapPanOrderToAssignmentShape(panOrder.toObject()));
+      }
+
+      const aadhaarOrder = await AadhaarOrder.findById(req.params.id);
+      if (!aadhaarOrder) {
         return res.status(404).json({ message: "Assignment not found" });
       }
 
-      await ensurePanOrderMetadata(panOrder);
+      await ensureAadhaarOrderMetadata(aadhaarOrder);
 
-      return res.json(mapPanOrderToAssignmentShape(panOrder.toObject()));
+      return res.json(mapAadhaarOrderToAssignmentShape(aadhaarOrder.toObject()));
     }
 
     res.json(assignment);
@@ -381,10 +577,16 @@ exports.acceptAssignment = async (req, res) => {
 
     let assignment = await Assignment.findById(id);
     let isPanOrder = false;
+    let isAadhaarOrder = false;
 
     if (!assignment) {
       assignment = await PANOrder.findById(id);
       isPanOrder = Boolean(assignment);
+    }
+
+    if (!assignment) {
+      assignment = await AadhaarOrder.findById(id);
+      isAadhaarOrder = Boolean(assignment);
     }
 
     if (!assignment) {
@@ -417,7 +619,11 @@ exports.acceptAssignment = async (req, res) => {
 
     res.json({
       message: "Order accepted",
-      assignment: isPanOrder ? mapPanOrderToAssignmentShape(assignment.toObject()) : assignment,
+      assignment: isPanOrder
+        ? mapPanOrderToAssignmentShape(assignment.toObject())
+        : isAadhaarOrder
+          ? mapAadhaarOrderToAssignmentShape(assignment.toObject())
+          : assignment,
     });
   } catch (err) {
     console.error("ACCEPT ERROR:", err);
