@@ -57,6 +57,9 @@ exports.getDashboardStats = async (req, res) => {
     const assignments = await Assignment.find(filter).sort({ createdAt: -1 }).lean();
 
     const totalOrders = assignments.length;
+    const queuedOrders = assignments.filter(
+      (assignment) => assignment.assignedTo == null,
+    ).length;
     const pendingOrders = assignments.filter(
       (assignment) => assignment.status === "requested",
     ).length;
@@ -143,6 +146,7 @@ exports.getDashboardStats = async (req, res) => {
     res.json({
       stats: {
         totalOrders,
+        queuedOrders,
         totalRevenue,
         pendingOrders,
         printingOrders,

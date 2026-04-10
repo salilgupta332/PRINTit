@@ -10,6 +10,7 @@ import {
   Printer,
   ArrowUpRight,
   AreaChart as AreaChartIcon,
+  Inbox,
 } from "lucide-react";
 import {
   Card,
@@ -32,6 +33,7 @@ import {
 } from "recharts";
 import { useAuth } from "@/context/AuthContext";
 import { apiGet } from "@/api/client";
+import { useNavigate } from "react-router-dom";
 
 const statusColors: Record<string, string> = {
   Printing: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
@@ -46,6 +48,7 @@ const statusColors: Record<string, string> = {
 const emptyDashboard = {
   stats: {
     totalOrders: 0,
+    queuedOrders: 0,
     totalRevenue: 0,
     pendingOrders: 0,
     printingOrders: 0,
@@ -60,6 +63,7 @@ const emptyDashboard = {
 
 const Dashboard = () => {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState<any>(emptyDashboard);
   const [loading, setLoading] = useState(true);
 
@@ -98,6 +102,15 @@ const Dashboard = () => {
       icon: ShoppingBag,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
+    },
+    {
+      title: "Orders in Queue",
+      value: dashboard.stats.queuedOrders.toLocaleString(),
+      subtitle: "Not accepted yet",
+      icon: Inbox,
+      color: "text-cyan-500",
+      bg: "bg-cyan-500/10",
+      onClick: () => navigate("/orders/all"),
     },
     {
       title: "Total Revenue",
@@ -151,9 +164,13 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-7">
           {stats.map((stat) => (
-            <Card key={stat.title} className="relative overflow-hidden">
+            <Card
+              key={stat.title}
+              className={`relative overflow-hidden ${stat.onClick ? "cursor-pointer transition-colors hover:bg-muted/40" : ""}`}
+              onClick={stat.onClick}
+            >
               <CardContent className="p-4">
                 <div className={`mb-3 inline-flex rounded-lg p-2 ${stat.bg}`}>
                   <stat.icon size={18} className={stat.color} />
