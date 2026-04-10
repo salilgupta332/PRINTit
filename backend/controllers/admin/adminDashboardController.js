@@ -7,9 +7,14 @@ const getAssignmentFilter = (adminId) => {
   const adminObjectId = new mongoose.Types.ObjectId(adminId);
 
   return {
-    $or: [
+    $and: [
       { broadcastTo: { $in: [adminObjectId] } },
-      { assignedTo: adminObjectId },
+      {
+        $or: [
+          { assignedTo: null },
+          { assignedTo: adminObjectId },
+        ],
+      },
     ],
   };
 };
