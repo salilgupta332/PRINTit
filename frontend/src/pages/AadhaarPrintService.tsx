@@ -92,10 +92,22 @@ export default function AadhaarPrintService() {
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
+  const getCurrentLocation = async () => {
+    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
+    return {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    };
+  };
+
 
 
 const handleSubmit = async () => {
   try {
+    const location = await getCurrentLocation();
 
     const formData = new FormData();
 
@@ -110,6 +122,9 @@ const handleSubmit = async () => {
     if (form.uploadFile) {
       formData.append("file", form.uploadFile);
     }
+
+    formData.append("lat", String(location.lat));
+    formData.append("lng", String(location.lng));
 
     const res = await fetch("http://localhost:5000/api/user/aadhaar-print", {
       method: "POST",
@@ -131,7 +146,7 @@ const handleSubmit = async () => {
 
     toast({
       title: "Error",
-      description: "Failed to submit order",
+      description: err?.message || "Failed to submit order",
       variant: "destructive"
     });
   }

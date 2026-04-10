@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const panOrderSchema = new mongoose.Schema(
 {
+  orderNumber: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+
   fullName: {
     type: String,
     required: true,
@@ -62,14 +68,72 @@ const panOrderSchema = new mongoose.Schema(
 
   paymentMethod: String,
 
+  assignmentDescription: {
+    type: String,
+    default: "",
+  },
+
   status: {
     type: String,
-    enum: ["pending","processing","ready","completed"],
-    default: "pending"
-  }
+    enum: [
+      "pending",
+      "requested",
+      "accepted",
+      "in_progress",
+      "printing",
+      "dispatched",
+      "ready",
+      "completed",
+      "delivered",
+    ],
+    default: "requested"
+  },
+
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Admin",
+    default: null,
+  },
+
+  broadcastTo: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+    },
+  ],
+
+  location: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      default: "Point",
+    },
+    coordinates: {
+      type: [Number],
+    },
+  },
+
+  activityLog: [
+    {
+      action: String,
+      by: {
+        type: String,
+        default: "system",
+      },
+      icon: {
+        type: String,
+        default: "create",
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 
 },
 { timestamps: true }
 );
 
+panOrderSchema.index({ location: "2dsphere" });
 module.exports = mongoose.model("PANOrder", panOrderSchema);

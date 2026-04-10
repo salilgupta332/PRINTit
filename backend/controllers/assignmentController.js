@@ -148,6 +148,13 @@ exports.createAssignment = async (req, res) => {
       location: locationData, // 🔥 SAFE
 
       status: "requested",
+      activityLog: [
+        {
+          action: "Order created",
+          by: "Customer",
+          icon: "create",
+        },
+      ],
     });
 
     /* =====================

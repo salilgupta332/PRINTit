@@ -101,6 +101,7 @@ const OrderDetail = () => {
   const [notes, setNotes] = useState(order?.notes || "");
   const [activityLog, setActivityLog] = useState(order?.activityLog || []);
   const [priority, setPriority] = useState(order?.priority || "Normal");
+  const [canManageOrder, setCanManageOrder] = useState(false);
 
   const availableStatusOptions = statusOptions.filter((option) => {
     const currentRank = statusOrder[status] ?? 0;
@@ -118,7 +119,9 @@ const OrderDetail = () => {
           date: new Date(data.createdAt).toLocaleString(),
 
           service:
-            data.assignmentType === "from_scratch"
+            data.assignmentTitle
+              ? data.assignmentTitle
+              : data.assignmentType === "from_scratch"
               ? "Typing / Writing"
               : "Printing",
 
@@ -148,6 +151,7 @@ const OrderDetail = () => {
           paymentStatus: data.price > 0 ? "Paid" : "Pending",
 
           status: data.status,
+          assignedTo: data.assignedTo || null,
 
           files:
             data.uploadedFiles?.map((f: any) => ({
@@ -160,33 +164,42 @@ const OrderDetail = () => {
             })) || [],
 
           activityLog:
-            data.activityLog?.map((log: any) => {
-              let actionText = log.action;
+            data.activityLog?.length > 0
+              ? data.activityLog.map((log: any) => {
+                  let actionText = log.action;
 
-              // format status messages
-              if (log.action.includes("Status changed to")) {
-                const status = log.action.split("Status changed to ")[1];
+                  if (log.action.includes("Status changed to")) {
+                    const status = log.action.split("Status changed to ")[1];
 
-                const statusMap: any = {
-                  requested: "Order requested",
-                  accepted: "Order accepted",
-                  in_progress: "Order accepted by admin",
-                  printing: "Printing started",
-                  dispatched: "Order dispatched",
-                  delivered: "Order delivered",
-                };
+                    const statusMap: any = {
+                      requested: "Order requested",
+                      accepted: "Order accepted",
+                      in_progress: "Order accepted by admin",
+                      printing: "Printing started",
+                      dispatched: "Order dispatched",
+                      delivered: "Order delivered",
+                    };
 
-                actionText = statusMap[status] || log.action;
-              }
+                    actionText = statusMap[status] || log.action;
+                  }
 
-              return {
-                action: actionText,
-                by: log.by,
-                icon: log.icon,
-                time: new Date(log.createdAt).toLocaleTimeString(),
-                date: new Date(log.createdAt).toLocaleDateString(),
-              };
-            }) || [],
+                  return {
+                    action: actionText,
+                    by: log.by,
+                    icon: log.icon,
+                    time: new Date(log.createdAt).toLocaleTimeString(),
+                    date: new Date(log.createdAt).toLocaleDateString(),
+                  };
+                })
+              : [
+                  {
+                    action: "Order created",
+                    by: "Customer",
+                    icon: "create",
+                    time: new Date(data.createdAt).toLocaleTimeString(),
+                    date: new Date(data.createdAt).toLocaleDateString(),
+                  },
+                ],
           notes: data.assignmentDescription || "",
           priority: "Normal",
         };
@@ -196,6 +209,12 @@ const OrderDetail = () => {
         setNotes(data.assignmentDescription || "");
         setPriority("Normal");
         setActivityLog(normalizedOrder.activityLog);
+
+        const adminData = JSON.parse(localStorage.getItem("admin") || "{}");
+        const currentAdminId = adminData?._id || adminData?.id || null;
+        setCanManageOrder(
+          Boolean(data.assignedTo && data.assignedTo.toString() === currentAdminId),
+        );
       } catch (err) {
         toast({
           title: "Error",
@@ -233,6 +252,8 @@ const OrderDetail = () => {
   }
 
   const handleStatusUpdate = async () => {
+    if (!canManageOrder) return;
+
     try {
       await updateOrderStatus(orderId, { status });
 
@@ -276,6 +297,8 @@ const OrderDetail = () => {
   };
 
   const handleAddNote = async () => {
+    if (!canManageOrder) return;
+
     try {
       await updateOrderNote(orderId, notes);
 
@@ -414,13 +437,22 @@ const OrderDetail = () => {
               <CardTitle className="text-base flex items-center gap-2">
                 <Settings2 className="h-4 w-4 text-primary" /> Status Management
               </CardTitle>
+              {!canManageOrder && (
+                <CardDescription>
+                  Accept this order first to update status or add shopkeeper notes.
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                   Order Status
                 </label>
-                <Select value={status} onValueChange={setStatus}>
+                <Select
+                  value={status}
+                  onValueChange={setStatus}
+                  disabled={!canManageOrder}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -440,7 +472,11 @@ const OrderDetail = () => {
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                   Priority
                 </label>
-                <Select value={priority} onValueChange={setPriority}>
+                <Select
+                  value={priority}
+                  onValueChange={setPriority}
+                  disabled={!canManageOrder}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -459,9 +495,14 @@ const OrderDetail = () => {
                   placeholder="e.g., Started printing batch 1..."
                   value={adminNote}
                   onChange={(e) => setAdminNote(e.target.value)}
+                  disabled={!canManageOrder}
                 />
               </div>
-              <Button className="w-full gap-2" onClick={handleStatusUpdate}>
+              <Button
+                className="w-full gap-2"
+                onClick={handleStatusUpdate}
+                disabled={!canManageOrder}
+              >
                 <Save className="h-4 w-4" /> Update Status
               </Button>
             </CardContent>
@@ -480,12 +521,14 @@ const OrderDetail = () => {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
+                disabled={!canManageOrder}
               />
               <Button
                 variant="outline"
                 size="sm"
                 className="w-full"
                 onClick={handleAddNote}
+                disabled={!canManageOrder}
               >
                 Save Note
               </Button>
@@ -567,6 +610,7 @@ const OrderDetail = () => {
                   variant="outline"
                   size="sm"
                   className="w-full text-green-600"
+                  disabled={!canManageOrder}
                 >
                   ✅ Mark as Paid
                 </Button>

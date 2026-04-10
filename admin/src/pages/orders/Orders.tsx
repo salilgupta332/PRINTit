@@ -45,7 +45,9 @@ const mapAssignmentToOrder = (assignment: any) => ({
     assignment.frontPageDetails?.studentName ||
     "Unknown Student",
   service:
-    assignment.assignmentType === "from_scratch"
+    assignment.assignmentTitle
+      ? assignment.assignmentTitle
+      : assignment.assignmentType === "from_scratch"
       ? "Typing / Writing"
       : assignment.assignmentType === "student_upload"
         ? "Printing"

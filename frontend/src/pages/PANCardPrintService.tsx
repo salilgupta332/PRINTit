@@ -82,8 +82,21 @@ export default function PANCardPrintService() {
     setForm((prev) => ({ ...prev, [field]: value }));
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
+
+  const getCurrentLocation = async () => {
+    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
+    return {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    };
+  };
+
   const handleSubmit = async () => {
     try {
+      const location = await getCurrentLocation();
       const formData = new FormData();
 
       Object.entries(form).forEach(([key, value]) => {
@@ -95,6 +108,9 @@ export default function PANCardPrintService() {
       if (form.uploadFile) {
         formData.append("file", form.uploadFile);
       }
+
+      formData.append("lat", String(location.lat));
+      formData.append("lng", String(location.lng));
 
       await createPanOrder(formData);
 
@@ -110,7 +126,7 @@ export default function PANCardPrintService() {
     } catch (err) {
       toast({
         title: "Error",
-        description: err.message,
+        description: err.message || "Location access is required to place this order.",
         variant: "destructive",
       });
     }
