@@ -77,6 +77,32 @@ exports.updateAssignmentStatus = async (req, res) => {
       return res.status(404).json({ message: "Assignment not found" });
     }
 
+    const statusOrder = {
+      requested: 0,
+      accepted: 1,
+      in_progress: 2,
+      printing: 3,
+      dispatched: 4,
+      delivered: 5,
+    };
+
+    const currentStatusRank = statusOrder[assignment.status];
+    const nextStatusRank = statusOrder[status];
+
+    if (nextStatusRank === undefined) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    if (currentStatusRank === undefined) {
+      return res.status(400).json({ message: "Current assignment status is invalid" });
+    }
+
+    if (nextStatusRank < currentStatusRank) {
+      return res.status(400).json({
+        message: `Cannot move status backward from ${assignment.status} to ${status}`,
+      });
+    }
+
     assignment.status = status;
     const iconMap = {
       requested: "create",

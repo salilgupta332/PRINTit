@@ -328,7 +328,7 @@ const OrdersTable = ({
                         <Eye size={12} />
                         View
                       </Button>
-                      {order.assignedTo && order.status === "accepted" ? (
+                      {order.assignedTo ? (
                         <Button
                           disabled
                           className="bg-gray-500 text-white cursor-not-allowed"

@@ -46,6 +46,7 @@ import { getOrderById, updateOrderStatus, updateOrderNote } from "@/api/orders";
 
 const statusOptions = [
   { value: "requested", label: "Requested", icon: Clock, color: "text-muted-foreground" },
+  { value: "accepted", label: "Accepted", icon: CheckCircle, color: "text-emerald-500" },
   { value: "in_progress", label: "In Progress", icon: Settings2, color: "text-blue-500" },
   { value: "printing", label: "Printing", icon: Printer, color: "text-blue-600" },
   { value: "dispatched", label: "Dispatched", icon: Truck, color: "text-purple-600" },
@@ -80,6 +81,15 @@ const activityIcons: Record<string, React.ElementType> = {
   delivered: MapPin,
 };
 
+const statusOrder: Record<string, number> = {
+  requested: 0,
+  accepted: 1,
+  in_progress: 2,
+  printing: 3,
+  dispatched: 4,
+  delivered: 5,
+};
+
 const OrderDetail = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
@@ -91,6 +101,12 @@ const OrderDetail = () => {
   const [notes, setNotes] = useState(order?.notes || "");
   const [activityLog, setActivityLog] = useState(order?.activityLog || []);
   const [priority, setPriority] = useState(order?.priority || "Normal");
+
+  const availableStatusOptions = statusOptions.filter((option) => {
+    const currentRank = statusOrder[status] ?? 0;
+    const optionRank = statusOrder[option.value] ?? 0;
+    return optionRank >= currentRank;
+  });
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -153,6 +169,7 @@ const OrderDetail = () => {
 
                 const statusMap: any = {
                   requested: "Order requested",
+                  accepted: "Order accepted",
                   in_progress: "Order accepted by admin",
                   printing: "Printing started",
                   dispatched: "Order dispatched",
@@ -228,6 +245,7 @@ const OrderDetail = () => {
       // convert status to readable action
       const statusMap: any = {
         requested: "Order requested",
+        accepted: "Order accepted",
         in_progress: "Order accepted by admin",
         printing: "Printing started",
         dispatched: "Order dispatched",
@@ -407,11 +425,11 @@ const OrderDetail = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {statusOptions.map((s) => (
+                    {availableStatusOptions.map((s) => (
                       <SelectItem key={s.value} value={s.value}>
                         <span className="flex items-center gap-2">
                           <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
-                          {s.value}
+                          {s.label}
                         </span>
                       </SelectItem>
                     ))}
