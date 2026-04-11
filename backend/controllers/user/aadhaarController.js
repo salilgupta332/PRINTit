@@ -16,6 +16,25 @@ const getNextAadhaarOrderNumber = async () => {
   return `AAD-${String(next).padStart(4, "0")}`;
 };
 
+const mapAadhaarOrderToSocketPayload = (order) => ({
+  _id: order._id,
+  orderNumber: order.orderNumber,
+  customer: {
+    name: order.fullName,
+    phone: order.mobile,
+    email: order.email,
+  },
+  assignmentType: "student_upload",
+  assignmentTitle: "Aadhaar Card Print",
+  totalPages: order.copies || 1,
+  status: order.status,
+  deadline: order.createdAt,
+  printPreferences: {
+    printType: order.printType === "pvc" ? "color" : "black_white",
+  },
+  assignedTo: order.assignedTo,
+});
+
 exports.createAadhaarOrder = async (req, res) => {
   try {
     const data = req.body;
@@ -90,6 +109,14 @@ exports.createAadhaarOrder = async (req, res) => {
     });
 
     await order.save();
+
+    const io = req.app.get("io");
+    if (io) {
+      const payload = mapAadhaarOrderToSocketPayload(order);
+      admins.forEach((admin) => {
+        io.to(admin._id.toString()).emit("new-order", payload);
+      });
+    }
 
     res.status(201).json({
       success: true,

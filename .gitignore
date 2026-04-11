@@ -6,3 +6,4 @@ dist/
 build/
 logs/
 npm-debug.log*
+notes.txt
