@@ -1,6 +1,7 @@
 const express = require("express");
 
 const Assignment = require("./order.model");
+const User = require("../user/user.model");
 const authMiddleware = require("../../shared/middlewares/userAuthMiddleware");
 const upload = require("../../shared/middlewares/uploadMiddleware");
 const { createAssignment, getAssignmentFile } = require("./order.controller");
@@ -21,8 +22,12 @@ router.get("/file/:assignmentId/:fileIndex", authMiddleware, getAssignmentFile);
 
 router.get("/my", authMiddleware, async (req, res) => {
   try {
+    const user = await User.findById(req.user.id).select("email");
     const assignments = await Assignment.find({
-      "customer.registeredUser": req.user.id,
+      $or: [
+        { "customer.registeredUser": req.user.id },
+        ...(user?.email ? [{ "customer.email": user.email }] : []),
+      ],
     }).sort({ createdAt: -1 });
 
     res.json(assignments);
@@ -33,9 +38,13 @@ router.get("/my", authMiddleware, async (req, res) => {
 
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
+    const user = await User.findById(req.user.id).select("email");
     const assignment = await Assignment.findOne({
       _id: req.params.id,
-      "customer.registeredUser": req.user.id,
+      $or: [
+        { "customer.registeredUser": req.user.id },
+        ...(user?.email ? [{ "customer.email": user.email }] : []),
+      ],
     });
 
     if (!assignment) {

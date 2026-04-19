@@ -73,9 +73,10 @@ export default function Navbar() {
                   <Button variant="ghost" className="gap-2">
                     <div className="w-7 h-7 rounded-full bg-gradient-primary flex items-center justify-center">
                       <span className="text-xs font-bold text-primary-foreground">
-                        {user?.name?.charAt(0).toUpperCase()}
+                        {(user?.name || "U").charAt(0).toUpperCase()}
                       </span>
                     </div>
+                    <span className="hidden lg:inline text-sm font-medium">{user?.name}</span>
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>

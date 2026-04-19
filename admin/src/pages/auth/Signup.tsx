@@ -6,14 +6,14 @@ import {
   Phone,
   Lock,
   Store,
-  Clock,
   FileText,
   MapPin,
-  Map,
   Hash,
   Check,
+  Clock3,
 } from "lucide-react";
 import AuthInput from "@/components/AuthInput";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import adminBg from "@/assets/admin-bg.jpg";
@@ -359,33 +359,46 @@ const AdminSignUp = () => {
                   }
                   icon={<Store size={18} />}
                 />
-                <Textarea
-                  placeholder="Description"
-                  value={formData.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                />
-                <AuthInput
-                  label="Opening Time"
-                  id="openTime"
-                  type="time"
-                  required
-                  value={formData.openTime}
-                  onChange={(e: any) =>
-                    handleChange("openTime", e.target.value)
-                  }
-                  icon={<Clock size={18} />}
-                />
-                <AuthInput
-                  label="Closing Time"
-                  id="closeTime"
-                  type="time"
-                  required
-                  value={formData.closeTime}
-                  onChange={(e: any) =>
-                    handleChange("closeTime", e.target.value)
-                  }
-                  icon={<Clock size={18} />}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="shop-description">Description</Label>
+                  <Textarea
+                    id="shop-description"
+                    placeholder="Tell customers about your shop"
+                    value={formData.description}
+                    onChange={(e) => handleChange("description", e.target.value)}
+                    className="min-h-[120px] bg-background text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="openTime">Opening Time</Label>
+                    <div className="relative">
+                      <Clock3 size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="openTime"
+                        type="time"
+                        required
+                        value={formData.openTime}
+                        onChange={(e) => handleChange("openTime", e.target.value)}
+                        className="auth-input pl-11"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="closeTime">Closing Time</Label>
+                    <div className="relative">
+                      <Clock3 size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="closeTime"
+                        type="time"
+                        required
+                        value={formData.closeTime}
+                        onChange={(e) => handleChange("closeTime", e.target.value)}
+                        className="auth-input pl-11"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <AuthInput
                   label="GSTIN"
                   id="gstin"

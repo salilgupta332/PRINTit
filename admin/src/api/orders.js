@@ -17,3 +17,9 @@ export const updateOrderNote = async (id, note) => {
     body: JSON.stringify({ note }),
   });
 };
+
+export const rejectOrder = async (id) => {
+  return apiFetch(`/admin/assignments/${id}/reject`, {
+    method: "PUT",
+  });
+};

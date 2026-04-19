@@ -1,9 +1,11 @@
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   if (isAuthenticated) return <>{children}</>;
 
@@ -25,8 +27,8 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           </p>
 
           <div className="flex gap-3 justify-center">
-            <Button>Sign In</Button>
-            <Button variant="outline">Sign Up</Button>
+            <Button onClick={() => navigate("/signin")}>Sign In</Button>
+            <Button variant="outline" onClick={() => navigate("/signup")}>Sign Up</Button>
           </div>
         </div>
       </div>

@@ -55,6 +55,18 @@ const aadhaarOrderSchema = new mongoose.Schema(
     paymentMethod: String,
     status: {
       type: String,
+      enum: [
+        "pending",
+        "requested",
+        "accepted",
+        "rejected",
+        "in_progress",
+        "printing",
+        "dispatched",
+        "ready",
+        "completed",
+        "delivered",
+      ],
       default: "requested",
     },
     assignedTo: {
@@ -63,6 +75,12 @@ const aadhaarOrderSchema = new mongoose.Schema(
       default: null,
     },
     broadcastTo: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+    ],
+    rejectedBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Admin",

@@ -66,6 +66,7 @@ const panOrderSchema = new mongoose.Schema(
         "pending",
         "requested",
         "accepted",
+        "rejected",
         "in_progress",
         "printing",
         "dispatched",
@@ -81,6 +82,12 @@ const panOrderSchema = new mongoose.Schema(
       default: null,
     },
     broadcastTo: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+    ],
+    rejectedBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Admin",

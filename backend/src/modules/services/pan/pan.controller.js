@@ -53,7 +53,7 @@ exports.createPanOrder = async (req, res) => {
       });
     }
 
-    const fileKey = await uploadToS3(req.file, "documents/pan");
+    const fileKey = await uploadToS3(req.file, "official-documents/pan");
     const admins = await Admin.find({
       "location.geo": {
         $near: {
@@ -90,6 +90,7 @@ exports.createPanOrder = async (req, res) => {
       },
       paymentMethod: data.paymentMethod,
       status: "requested",
+      rejectedBy: [],
       broadcastTo: admins.map((admin) => admin._id),
       location: {
         type: "Point",

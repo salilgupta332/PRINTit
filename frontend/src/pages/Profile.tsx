@@ -14,8 +14,8 @@ export default function Profile() {
       <div className="bg-card border border-border rounded-xl p-6 shadow-card space-y-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
-            <span className="text-2xl font-bold text-primary-foreground">
-              {user?.name?.charAt(0).toUpperCase()}
+              <span className="text-2xl font-bold text-primary-foreground">
+              {(user?.name || "U").charAt(0).toUpperCase()}
             </span>
           </div>
           <div>

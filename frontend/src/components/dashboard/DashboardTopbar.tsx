@@ -46,10 +46,10 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
             <Button variant="ghost" className="gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
                 <span className="text-sm font-bold text-primary-foreground">
-                  {user?.name?.charAt(0).toUpperCase()}
+                  {(user?.name || "U").charAt(0).toUpperCase()}
                 </span>
               </div>
-              <span className="hidden sm:inline text-sm font-medium">{user?.name}</span>
+              <span className="hidden sm:inline text-sm font-medium">{user?.name || "User"}</span>
               <ChevronDown className="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>

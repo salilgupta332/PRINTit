@@ -15,11 +15,17 @@ const getAdminObjectId = (adminId) => new mongoose.Types.ObjectId(adminId);
 
 const buildVisibleOrderFilter = (adminObjectId) => ({
   $and: [
-    { broadcastTo: { $in: [adminObjectId] } },
+    {
+      $or: [
+        { broadcastTo: { $in: [adminObjectId] } },
+        { rejectedBy: { $in: [adminObjectId] } },
+      ],
+    },
     {
       $or: [
         { assignedTo: null },
         { assignedTo: adminObjectId },
+        { rejectedBy: { $in: [adminObjectId] } },
       ],
     },
   ],
@@ -35,6 +41,7 @@ const getAssignmentFilter = (adminId) => {
         $or: [
           { assignedTo: null },
           { assignedTo: adminObjectId },
+          { rejectedBy: { $in: [adminObjectId] } },
         ],
       },
     ],
@@ -78,6 +85,7 @@ const normalizePanStatus = (status) => {
 const denormalizePanStatus = (status) => {
   if (status === "requested") return "requested";
   if (status === "accepted") return "accepted";
+  if (status === "rejected") return "rejected";
   if (status === "in_progress") return "in_progress";
   if (status === "printing") return "printing";
   if (status === "dispatched") return "dispatched";
@@ -96,6 +104,7 @@ const normalizeAadhaarStatus = (status) => {
 const denormalizeAadhaarStatus = (status) => {
   if (status === "requested") return "requested";
   if (status === "accepted") return "accepted";
+  if (status === "rejected") return "rejected";
   if (status === "in_progress") return "in_progress";
   if (status === "printing") return "printing";
   if (status === "dispatched") return "dispatched";
@@ -271,6 +280,7 @@ const mapPanOrderToAssignmentShape = (panOrder) => ({
   status: normalizePanStatus(panOrder.status),
   assignedTo: panOrder.assignedTo || null,
   broadcastTo: panOrder.broadcastTo || [],
+  rejectedBy: panOrder.rejectedBy || [],
   activityLog: panOrder.activityLog || [],
   createdAt: panOrder.createdAt,
   updatedAt: panOrder.updatedAt,
@@ -321,6 +331,7 @@ const mapAadhaarOrderToAssignmentShape = (aadhaarOrder) => ({
   status: normalizeAadhaarStatus(aadhaarOrder.status),
   assignedTo: aadhaarOrder.assignedTo || null,
   broadcastTo: aadhaarOrder.broadcastTo || [],
+  rejectedBy: aadhaarOrder.rejectedBy || [],
   activityLog: aadhaarOrder.activityLog || [],
   createdAt: aadhaarOrder.createdAt,
   updatedAt: aadhaarOrder.updatedAt,
@@ -490,6 +501,7 @@ exports.loginAdmin = async (req, res) => {
       token,
       admin: {
         id: admin._id,
+        name: admin.fullName,
         email: admin.email,
         role: "admin",
         isProfileComplete: admin.isProfileComplete,
@@ -497,6 +509,29 @@ exports.loginAdmin = async (req, res) => {
     });
   } catch (error) {
     console.error("Admin login error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getCurrentAdmin = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.adminId).select("fullName email role");
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res.json({
+      success: true,
+      adminId: admin._id,
+      admin: {
+        id: admin._id,
+        name: admin.fullName,
+        email: admin.email,
+        role: admin.role,
+      },
+    });
+  } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -663,6 +698,7 @@ exports.updateAssignmentStatus = async (req, res) => {
 
     const allowedStatuses = [
       "requested",
+      "rejected",
       "in_progress",
       "printing",
       "dispatched",
@@ -700,6 +736,7 @@ exports.updateAssignmentStatus = async (req, res) => {
     const statusOrder = {
       requested: 0,
       accepted: 1,
+      rejected: 1,
       in_progress: 2,
       printing: 3,
       dispatched: 4,
@@ -887,6 +924,10 @@ exports.acceptAssignment = async (req, res) => {
       return res.status(400).json({ message: "Already assigned" });
     }
 
+    if ((assignment.rejectedBy || []).some((adminId) => adminId.toString() === req.adminId.toString())) {
+      return res.status(400).json({ message: "You have already rejected this order" });
+    }
+
     assignment.assignedTo = req.adminId;
     assignment.status = isPanOrder ? "accepted" : "accepted";
     assignment.activityLog.push({
@@ -917,6 +958,63 @@ exports.acceptAssignment = async (req, res) => {
     });
   } catch (err) {
     console.error("ACCEPT ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.rejectAssignment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    let assignment = await Assignment.findById(id);
+    let isPanOrder = false;
+    let isAadhaarOrder = false;
+
+    if (!assignment) {
+      assignment = await PANOrder.findById(id);
+      isPanOrder = Boolean(assignment);
+    }
+
+    if (!assignment) {
+      assignment = await AadhaarOrder.findById(id);
+      isAadhaarOrder = Boolean(assignment);
+    }
+
+    if (!assignment) {
+      return res.status(404).json({ message: "Assignment not found" });
+    }
+
+    if (assignment.assignedTo) {
+      return res.status(400).json({ message: "Accepted orders cannot be rejected" });
+    }
+
+    const rejectedBy = assignment.rejectedBy || [];
+    if (rejectedBy.some((adminId) => adminId.toString() === req.adminId.toString())) {
+      return res.status(400).json({ message: "Order already rejected by you" });
+    }
+
+    assignment.rejectedBy = [...rejectedBy, req.adminId];
+    assignment.activityLog.push({
+      action: "Order rejected by admin",
+      by: "Admin",
+      icon: "reject",
+    });
+
+    await assignment.save();
+
+    const mappedAssignment = isPanOrder
+      ? mapPanOrderToAssignmentShape(assignment.toObject())
+      : isAadhaarOrder
+        ? mapAadhaarOrderToAssignmentShape(assignment.toObject())
+        : assignment;
+
+    res.json({
+      success: true,
+      message: "Order rejected successfully",
+      assignment: mappedAssignment,
+    });
+  } catch (error) {
+    console.error("Reject order error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

@@ -26,7 +26,7 @@ const AdminSignIn = () => {
     try {
       const data = await apiPost("/admin/login", { email, password });
 
-      login(data.token);          // save JWT
+      await login(data.token, undefined, data.admin);          // save JWT
       navigate("/dashboard");   // redirect dashboard
     } catch (err: any) {
       setError(err.message || "Login failed");

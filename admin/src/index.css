@@ -220,7 +220,18 @@
     @apply bg-muted text-muted-foreground;
   }
 
-  .step-connector {
+.step-connector {
     @apply h-1 flex-1 rounded-full transition-all duration-500;
   }
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0.8;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 1;
 }

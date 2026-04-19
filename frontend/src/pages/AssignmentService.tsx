@@ -174,7 +174,7 @@ if (location.lat && location.lng) {
       fd.append("academicLevel", form.academicLevel);
       fd.append("deadline", form.deadline);
       fd.append("language", form.language);
-      fd.append("description", form.description);
+      fd.append("assignmentDescription", form.description);
 
       /* ================= FILES ================= */
       if (form.assignmentType === "upload" && form.uploadFile) {
@@ -182,7 +182,7 @@ if (location.lat && location.lng) {
       }
 
       if (form.assignmentType === "scratch" && form.layoutFile) {
-        fd.append("layoutFile", form.layoutFile);
+        fd.append("layoutFiles", form.layoutFile);
       }
 
       /* ================= FRONT PAGE ================= */

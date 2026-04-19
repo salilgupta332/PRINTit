@@ -92,7 +92,7 @@ export const TopBar = ({ onAuthClick }: TopBarProps) => {
                   className="flex items-center gap-2 rounded-full px-2 hover:bg-muted"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    {user?.avatar}
+                    {(user?.name || "A").charAt(0).toUpperCase()}
                   </div>
                   <div className="hidden flex-col items-start sm:flex">
                     <span className="text-sm font-medium leading-none">

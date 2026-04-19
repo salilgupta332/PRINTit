@@ -54,7 +54,7 @@ exports.createAadhaarOrder = async (req, res) => {
       });
     }
 
-    const fileKey = await uploadToS3(req.file, "documents/aadhaar");
+    const fileKey = await uploadToS3(req.file, "official-documents/aadhaar");
     const admins = await Admin.find({
       "location.geo": {
         $near: {
@@ -98,6 +98,7 @@ exports.createAadhaarOrder = async (req, res) => {
         coordinates: [lng, lat],
       },
       broadcastTo: admins.map((admin) => admin._id),
+      rejectedBy: [],
       activityLog: [
         {
           action: "Order created",

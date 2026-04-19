@@ -139,7 +139,7 @@ const assignmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["requested", "accepted", "in_progress", "printing", "dispatched", "delivered"],
+      enum: ["requested", "accepted", "rejected", "in_progress", "printing", "dispatched", "delivered"],
       default: "requested",
     },
     price: {
@@ -152,6 +152,12 @@ const assignmentSchema = new mongoose.Schema(
       default: null,
     },
     broadcastTo: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+    ],
+    rejectedBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Admin",

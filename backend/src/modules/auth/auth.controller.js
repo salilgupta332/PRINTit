@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
 const User = require("../user/user.model");
+const Assignment = require("../orders/order.model");
 const sendEmail = require("../../shared/utils/sendEmail");
 
 exports.register = async (req, res) => {
@@ -131,6 +132,91 @@ exports.resetPasswordOtp = async (req, res) => {
 
     res.status(200).json({
       message: "Password reset successful",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("fullName email mobileNumber role");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      user: {
+        id: user._id,
+        name: user.fullName,
+        email: user.email,
+        mobileNumber: user.mobileNumber,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getUserDashboard = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("email");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const assignments = await Assignment.find({
+      $or: [
+        { "customer.registeredUser": req.user.id },
+        { "customer.email": user.email },
+      ],
+    }).sort({ createdAt: -1 }).lean();
+
+    const stats = {
+      totalOrders: assignments.length,
+      inProgress: assignments.filter((assignment) => ["accepted", "in_progress", "printing", "dispatched"].includes(assignment.status)).length,
+      delivered: assignments.filter((assignment) => assignment.status === "delivered").length,
+      pending: assignments.filter((assignment) => assignment.status === "requested").length,
+    };
+
+    const monthlyMap = new Map();
+    assignments.forEach((assignment) => {
+      const date = new Date(assignment.createdAt);
+      const label = date.toLocaleDateString("en-US", { month: "short" });
+      monthlyMap.set(label, (monthlyMap.get(label) || 0) + 1);
+    });
+
+    const serviceMap = assignments.reduce((acc, assignment) => {
+      let key = "Assignment Support";
+      if (assignment.assignmentType === "from_scratch") key = "Typing / Writing";
+      if (assignment.assignmentType === "student_upload") key = "Printing";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const recentOrders = assignments.slice(0, 5).map((assignment) => ({
+      id: assignment.orderNumber || assignment._id.toString(),
+      service:
+        assignment.assignmentType === "from_scratch"
+          ? "Typing / Writing"
+          : "Printing",
+      status: assignment.status,
+      date: new Date(assignment.createdAt).toISOString().slice(0, 10),
+    }));
+
+    res.json({
+      stats,
+      monthlyOrders: Array.from(monthlyMap.entries()).map(([month, orders]) => ({ month, orders })),
+      serviceBreakdown: Object.entries(serviceMap).map(([name, value]) => ({ name, value })),
+      statusBreakdown: [
+        { name: "Delivered", value: stats.delivered },
+        { name: "In Progress", value: stats.inProgress },
+        { name: "Pending", value: stats.pending },
+      ].filter((entry) => entry.value > 0),
+      recentOrders,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

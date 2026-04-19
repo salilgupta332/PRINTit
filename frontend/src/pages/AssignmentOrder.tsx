@@ -53,7 +53,7 @@ const OrdersTable = ({
       try {
         setLoading(true);
 
-        const data = await apiFetch("/assignments/my" , token);
+        const data = await apiFetch("/assignments/my");
 
         let assignments: any[] = [];
 
@@ -63,17 +63,19 @@ const OrdersTable = ({
 
         // ===== TRANSFORM TO UI FORMAT =====
         const mapped = assignments.map((a) => ({
-          id: a._id,
+          id: a.orderNumber || a._id,
+          mongoId: a._id,
           customer:
             a.customer?.name ||
             a.frontPageDetails?.studentName ||
             "Unknown Student",
           service:
-            a.assignmentType === "from_scratch"
+            a.subjectName ||
+            (a.assignmentType === "from_scratch"
               ? "Typing / Writing"
               : a.assignmentType === "student_upload"
                 ? "Printing"
-                : "General Service",
+                : "General Service"),
           pages: a.totalPages || a.pages || 0,
           status: (a.status || "requested").toLowerCase(),
           date: a.deadline
@@ -83,7 +85,7 @@ const OrdersTable = ({
                 year: "numeric",
               })
             : "No deadline",
-          amount: `₹${(a.totalPages || 0) * 2}`, // simple calc for now
+          amount: `₹${a.price || (a.totalPages || 0) * 2}`,
           printType:
             a.printPreferences?.printType?.replace("_", " ") || "Standard",
         }));
@@ -200,7 +202,7 @@ const OrdersTable = ({
                       <span
                         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[order.status]}`}
                       >
-                        {order.status}
+                        {order.status.replaceAll("_", " ")}
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-xs text-muted-foreground">
@@ -211,7 +213,7 @@ const OrdersTable = ({
                         variant="outline"
                         size="sm"
                         className="gap-1 h-7"
-                        onClick={() => navigate(`/assignments/${order.id}`)}
+                        onClick={() => navigate(`/assignments/${order.mongoId}`)}
                       >
                         <Eye size={12} />
                         View

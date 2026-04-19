@@ -1,53 +1,64 @@
 import { FileText, Printer, Package, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/api/client";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from "recharts";
 
-const stats = [
-  { icon: FileText, label: "Total Orders", value: "12", color: "text-blue-500 bg-blue-500/10" },
-  { icon: Printer, label: "In Progress", value: "3", color: "text-primary bg-primary/10" },
-  { icon: Package, label: "Delivered", value: "8", color: "text-emerald-500 bg-emerald-500/10" },
-  { icon: Clock, label: "Pending", value: "1", color: "text-amber-500 bg-amber-500/10" },
-];
-
-const monthlyData = [
-  { month: "Sep", orders: 2 },
-  { month: "Oct", orders: 5 },
-  { month: "Nov", orders: 3 },
-  { month: "Dec", orders: 7 },
-  { month: "Jan", orders: 4 },
-  { month: "Feb", orders: 12 },
-];
-
-const serviceBreakdown = [
-  { name: "Assignments", value: 5, color: "hsl(262, 83%, 58%)" },
-  { name: "Notes", value: 3, color: "hsl(24, 95%, 53%)" },
-  { name: "Official Docs", value: 2, color: "hsl(160, 60%, 45%)" },
-  { name: "Business", value: 2, color: "hsl(45, 90%, 50%)" },
-];
-
-const statusBreakdown = [
-  { name: "Delivered", value: 8, color: "hsl(160, 60%, 45%)" },
-  { name: "In Progress", value: 3, color: "hsl(262, 83%, 58%)" },
-  { name: "Pending", value: 1, color: "hsl(45, 90%, 50%)" },
-];
-
-const recentOrders = [
-  { id: "ORD-001", service: "Assignment Print", status: "Delivered", date: "2026-02-20" },
-  { id: "ORD-002", service: "Notes Printing", status: "In Progress", date: "2026-02-22" },
-  { id: "ORD-003", service: "Official Document", status: "Pending", date: "2026-02-23" },
-];
-
 export default function DashboardHome() {
   const { user } = useAuth();
+  const [dashboard, setDashboard] = useState<any>({
+    stats: { totalOrders: 0, inProgress: 0, delivered: 0, pending: 0 },
+    monthlyOrders: [],
+    serviceBreakdown: [],
+    statusBreakdown: [],
+    recentOrders: [],
+  });
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const data = await apiFetch("/auth/dashboard");
+        setDashboard({
+          stats: data?.stats || { totalOrders: 0, inProgress: 0, delivered: 0, pending: 0 },
+          monthlyOrders: data?.monthlyOrders || [],
+          serviceBreakdown: (data?.serviceBreakdown || []).map((item: any, index: number) => ({
+            ...item,
+            color: ["hsl(262, 83%, 58%)", "hsl(24, 95%, 53%)", "hsl(160, 60%, 45%)", "hsl(45, 90%, 50%)"][index % 4],
+          })),
+          statusBreakdown: (data?.statusBreakdown || []).map((item: any) => ({
+            ...item,
+            color:
+              item.name === "Delivered"
+                ? "hsl(160, 60%, 45%)"
+                : item.name === "In Progress"
+                  ? "hsl(262, 83%, 58%)"
+                  : "hsl(45, 90%, 50%)",
+          })),
+          recentOrders: data?.recentOrders || [],
+        });
+      } catch (error) {
+        console.error("Failed to load user dashboard", error);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  const stats = [
+    { icon: FileText, label: "Total Orders", value: String(dashboard.stats.totalOrders), color: "text-blue-500 bg-blue-500/10" },
+    { icon: Printer, label: "In Progress", value: String(dashboard.stats.inProgress), color: "text-primary bg-primary/10" },
+    { icon: Package, label: "Delivered", value: String(dashboard.stats.delivered), color: "text-emerald-500 bg-emerald-500/10" },
+    { icon: Clock, label: "Pending", value: String(dashboard.stats.pending), color: "text-amber-500 bg-amber-500/10" },
+  ];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground">
-          Welcome back, {user?.name} 👋
+          Welcome back, {user?.name || "there"} 👋
         </h1>
         <p className="text-muted-foreground text-sm mt-1">Here's what's happening with your orders.</p>
       </div>
@@ -75,7 +86,7 @@ export default function DashboardHome() {
         <div className="bg-card border border-border rounded-xl shadow-card p-5">
           <h2 className="font-display text-lg font-semibold text-card-foreground mb-4">Monthly Orders</h2>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={monthlyData}>
+            <BarChart data={dashboard.monthlyOrders}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
               <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
@@ -98,7 +109,7 @@ export default function DashboardHome() {
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
-                data={serviceBreakdown}
+                data={dashboard.serviceBreakdown}
                 cx="50%"
                 cy="50%"
                 innerRadius={55}
@@ -106,7 +117,7 @@ export default function DashboardHome() {
                 paddingAngle={4}
                 dataKey="value"
               >
-                {serviceBreakdown.map((entry, index) => (
+                {dashboard.serviceBreakdown.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -133,14 +144,14 @@ export default function DashboardHome() {
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
-                data={statusBreakdown}
+                data={dashboard.statusBreakdown}
                 cx="50%"
                 cy="50%"
                 outerRadius={90}
                 dataKey="value"
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
-                {statusBreakdown.map((entry, index) => (
+                {dashboard.statusBreakdown.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -172,17 +183,17 @@ export default function DashboardHome() {
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.map((order) => (
+                {dashboard.recentOrders.map((order: any) => (
                   <tr key={order.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-5 py-4 text-sm font-medium text-card-foreground">{order.id}</td>
                     <td className="px-5 py-4 text-sm text-muted-foreground">{order.service}</td>
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        order.status === "Delivered" ? "bg-emerald-500/10 text-emerald-600" :
-                        order.status === "In Progress" ? "bg-primary/10 text-primary" :
+                        order.status === "delivered" ? "bg-emerald-500/10 text-emerald-600" :
+                        ["accepted", "in_progress", "printing", "dispatched"].includes(order.status) ? "bg-primary/10 text-primary" :
                         "bg-amber-500/10 text-amber-600"
                       }`}>
-                        {order.status}
+                        {String(order.status).replaceAll("_", " ")}
                       </span>
                     </td>
                     <td className="px-5 py-4 text-sm text-muted-foreground">{order.date}</td>

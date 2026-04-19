@@ -62,7 +62,7 @@ exports.createAssignment = async (req, res) => {
     if (req.files?.uploadedFiles) {
       uploadedFiles = await Promise.all(
         req.files.uploadedFiles.map(async (file) => {
-          const key = await uploadToS3(file);
+          const key = await uploadToS3(file, "assignment-support/orders/files");
           return { filename: file.originalname, key };
         }),
       );
@@ -71,7 +71,7 @@ exports.createAssignment = async (req, res) => {
     if (req.files?.layoutFiles) {
       layoutFiles = await Promise.all(
         req.files.layoutFiles.map(async (file) => {
-          const key = await uploadToS3(file);
+          const key = await uploadToS3(file, "assignment-support/orders/layouts");
           return { filename: file.originalname, key };
         }),
       );
@@ -97,7 +97,10 @@ exports.createAssignment = async (req, res) => {
 
     const assignment = await Assignment.create({
       orderNumber,
-      customer: parsedCustomer,
+      customer: {
+        ...parsedCustomer,
+        registeredUser: req.user.id,
+      },
       assignmentType,
       subjectName,
       assignmentTitle,
@@ -116,6 +119,7 @@ exports.createAssignment = async (req, res) => {
       address: parsedAddress,
       location: locationData,
       status: "requested",
+      rejectedBy: [],
       activityLog: [
         {
           action: "Order created",

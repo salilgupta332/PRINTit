@@ -26,7 +26,7 @@ export default function Login() {
     try {
       const data = await loginUser(email, password);
       console.log("LOGIN RESPONSE:", data);
-      login(data.token); // save token
+      login(data.token, data.user); // save token and user
       navigate("/dashboard");
     } catch (error: any) {
       setMessage(error.message || "Login failed");

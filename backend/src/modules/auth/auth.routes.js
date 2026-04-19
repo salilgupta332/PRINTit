@@ -7,7 +7,10 @@ const {
   forgotPassword,
   resetPassword,
   resetPasswordOtp,
+  getCurrentUser,
+  getUserDashboard,
 } = require("./auth.controller");
+const authMiddleware = require("../../shared/middlewares/userAuthMiddleware");
 const User = require("../user/user.model");
 
 const router = express.Router();
@@ -16,6 +19,8 @@ router.post("/register", register);
 router.post("/forgot-password", forgotPassword);
 router.put("/reset-password/:token", resetPassword);
 router.post("/reset-password-otp", resetPasswordOtp);
+router.get("/me", authMiddleware, getCurrentUser);
+router.get("/dashboard", authMiddleware, getUserDashboard);
 
 router.post("/login", async (req, res) => {
   try {
@@ -44,6 +49,13 @@ router.post("/login", async (req, res) => {
     res.json({
       message: "Login successful",
       token,
+      user: {
+        id: user._id,
+        name: user.fullName,
+        email: user.email,
+        mobileNumber: user.mobileNumber,
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error("Login error:", error);
